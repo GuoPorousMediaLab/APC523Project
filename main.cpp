@@ -13,7 +13,7 @@ int main(int argc, char const *argv[])
 	// 1 - minbee, 2 - superbee
 	if (argc != 3)
 	{
-		cerr << "You must choose Rieman solver and slope limiter, e.g.: " << endl;
+		cerr << "You must choose Rieman solver and slope-limiter, e.g.: " << endl;
 		cerr << "./Simulation 1 1" << endl;
 		abort();
 	}

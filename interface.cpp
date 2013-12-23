@@ -24,6 +24,11 @@ void Interface::set_interface_cells()
 	}
 }
 
+void Interface::initialize()
+{
+	// to be implemented from IO 
+}
+
 void Interface::OutputCellid()
 {
 	vector<Cell*>::iterator interface_cells_iter = interface_cells_.begin();

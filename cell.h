@@ -20,6 +20,8 @@ public:
 	void set_cell_interfaces();
 	int get_id(){return id_;};
 
+	void initialize();
+
 	//for test
 	void OutputInterfaceid();
 
@@ -29,6 +31,8 @@ private:
 	double x_, y_, dx_, dy_;
 	int id_;
 	Model* mymodel_;
+
+	vector<double> U_;
 
 	void create_(vector<int>, double, double, double, double, int, Model*);
 	void create_();

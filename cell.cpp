@@ -34,6 +34,11 @@ void Cell::set_cell_interfaces()
 	}
 }
 
+void Cell::initialize()
+{
+	// to be implemented from IO
+}
+
 void Cell::OutputInterfaceid()
 {
 	vector<Interface*>::iterator cell_interfaces_iter = cell_interfaces_.begin();

@@ -19,6 +19,8 @@ public:
 	void set_interface_cells();
 	int get_id(){return id_;};
 
+	void initialize();
+
 	// for test
 	void OutputCellid();
 
@@ -27,6 +29,12 @@ private:
 	vector<Cell*> interface_cells_;
 	int id_;
 	Model* mymodel_;
+
+	// U1_ correspondes to cell1 of the interface, U2_ corresponds to cell2
+	vector<double> U1_;
+	vector<double> U2_;
+	// direction of flux F is from cell1 to cell2
+	vector<double> F_;
 
 	void create_(vector<int>, int, Model*);
 	void create_();
