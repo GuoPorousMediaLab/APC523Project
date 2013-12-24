@@ -1,8 +1,9 @@
 #include <iostream>
+#include <cstdlib>
 #include "cell.h"
 #include "interface.h"
 #include "model.h"
-#include "reiman_solver.h"
+#include "riemann_solver.h"
 #include "slope_limiter.h"
 
 using namespace std;
