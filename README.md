@@ -9,3 +9,5 @@ The code is only a setup of the numerical grids based on a cell-interface
 datastructure.
 
 Physical parameters relevant to the specific physical systems are to be added.
+
+Test
