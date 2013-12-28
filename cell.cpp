@@ -1,12 +1,15 @@
-#include <vector>
 #include <iostream>
+#include <cmath>
 #include "cell.h"
 
 using namespace std;
 
-void Cell::create_(vector<int> interfaceid, double x, double y, double dx, double dy, int id, Model* mymodel)
+void Cell::create_(int *interfaceid, double x, double y, double dx, double dy, int id, Model *mymodel)
 {
-	interfaceid_ = interfaceid;
+	for (int i = 0; i < 4; i++)
+	{
+		interfaceid_[i] = interfaceid[i];
+	}
 	x_ = x;
 	y_ = y;
 	dx_ = dx;
@@ -25,26 +28,47 @@ void Cell::create_()
 
 void Cell::set_cell_interfaces()
 {
-	vector<int>::iterator interfaceid_iterator = interfaceid_.begin();
-	vector<int>::iterator interfaceid_end = interfaceid_.end();
-	while (interfaceid_iterator != interfaceid_end)
+	int i, id;
+	for (i = 0; i < 4; i++)
 	{
-		cell_interfaces_.push_back(&(*mymodel_).get_interfaces()[*interfaceid_iterator - 1]);
-		interfaceid_iterator++;
+		id = interfaceid_[i];
+		cell_interfaces_[i] = mymodel_->get_interface(id);
 	}
 }
 
-void Cell::initialize()
+void Cell::set_U(double *U)
 {
-	// to be implemented from IO
+	for (int i = 0; i < 4; i++)
+	{
+		U_[i] = U[i];
+	}
+}
+
+void Cell::updatex(double dt)
+// update vector U using the flux F of the left and right interfaces
+{
+	for (int i = 0; i < 4; i++)
+	{
+		U_[i] = U_[i] + dt / dx_  * (cell_interfaces_[0]->get_F()[i] - cell_interfaces_[1]->get_F()[i]);
+	}
+}
+
+double Cell::get_dt()
+// calculate the maximum allowable step size (corresponding to CPL = 1)
+{
+	double p, u, a;
+	
+	u = sqrt(U_[1] * U_[1] + U_[2] * U_[2]) / U_[0];
+	p = (GAMMA - 1.0) * (U_[3] - 0.5 * (U_[1] * U_[1] + U_[2] * U_[2]) / U_[0]);
+	a = sqrt(GAMMA * p / U_[0]);
+	
+	return(dx_/ (u + a));
 }
 
 void Cell::OutputInterfaceid()
 {
-	vector<Interface*>::iterator cell_interfaces_iter = cell_interfaces_.begin();
-    vector<Interface*>::iterator cell_interfaces_end = cell_interfaces_.end();
-    while (cell_interfaces_iter != cell_interfaces_end) {
-        cout << (*cell_interfaces_iter)->get_id() << endl;
-        cell_interfaces_iter++;
-    }  
-}
+    for (int i = 0; i < 4; i++)
+    {
+        cout << cell_interfaces_[i]->get_id() << endl;
+    }
+}    

@@ -1,9 +1,13 @@
 #include "interface.h"
 #include <iostream>
+#include <cmath>
 
-void Interface::create_(vector<int> cell_id, int id, Model* mymodel)
+void Interface::create_(int *cellid, int id, Model *mymodel)
 {
-	cellid_ = cell_id;
+	for (int i = 0; i < 2; i++)
+	{
+		cellid_[i] = cellid[i];
+	}
 	id_ = id;
 	mymodel_ = mymodel;
 }
@@ -15,12 +19,18 @@ void Interface::create_()
 
 void Interface::set_interface_cells()
 {
-	vector<int>::iterator cellid_iterator = cellid_.begin();
-	vector<int>::iterator cellid_end = cellid_.end();
-	while (cellid_iterator != cellid_end)
+	int i, id;
+	for (i = 0; i < 2; i++)
 	{
-		interface_cells_.push_back(&(*mymodel_).get_cells()[*cellid_iterator - 1]);
-		cellid_iterator++;
+		id = cellid_[i];
+		if (id == -1)
+		{
+			interface_cells_[i] = NULL;
+		}
+		else
+		{
+			interface_cells_[i]= mymodel_->get_cell(id);
+		}
 	}
 }
 
@@ -29,12 +39,33 @@ void Interface::initialize()
 	// to be implemented from IO 
 }
 
+void Interface::set_U1(double *U)
+{
+	for (int i = 0; i < 4; i++)
+	{
+		U1_[i] = U[i];
+	}
+}
+
+void Interface::set_U2(double *U)
+{
+	for (int i = 0; i < 4; i++)
+	{
+		U2_[i] = U[i];
+	}
+}
+
 void Interface::OutputCellid()
 {
-	vector<Cell*>::iterator interface_cells_iter = interface_cells_.begin();
-    vector<Cell*>::iterator interface_cells_end = interface_cells_.end();
-    while (interface_cells_iter != interface_cells_end) {
-        cout << (*interface_cells_iter)->get_id() << endl;
-        interface_cells_iter++;
+    for (int i = 0; i < 2; i++)
+    {
+    	if (interface_cells_[i] == NULL)
+    	{
+    		cout << -1 << endl;
+    	}
+    	else
+    	{
+			cout << interface_cells_[i]->get_id() << endl;
+		}
     }
 }

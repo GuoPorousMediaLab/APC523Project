@@ -1,7 +1,6 @@
 #ifndef APC523Project_INTERFACE_H
 #define APC523Project_INTERFACE_H
 
-#include <vector>
 #include "cell.h"
 #include "model.h"
 
@@ -13,30 +12,37 @@ class Cell;
 class Interface
 {
 public:
-	Interface(vector<int> cellid, int id, Model* mymodel){create_(cellid, id, mymodel);};
+	Interface(int *cellid, int id, Model *mymodel){create_(cellid, id, mymodel);};
 	Interface(){create_();};
 
 	void set_interface_cells();
 	int get_id(){return id_;};
-
+	Cell *get_cell(int i){return interface_cells_[i];};
+	double *get_F(){return F_;};
+	void set_U1(double *);
+	void set_U2(double *);
+	void roe();
+	
 	void initialize();
 
 	// for test
 	void OutputCellid();
+	double *get_U1(){return U1_;};
+	double *get_U2(){return U2_;};
 
 private:
-	vector<int> cellid_;
-	vector<Cell*> interface_cells_;
+	int cellid_[2];
+	Cell *interface_cells_[2];	// interface_cells_[0]: bottom/left cell, [1] : top/right cell
 	int id_;
-	Model* mymodel_;
+	Model *mymodel_;
 
 	// U1_ correspondes to cell1 of the interface, U2_ corresponds to cell2
-	vector<double> U1_;
-	vector<double> U2_;
+	double U1_[4];
+	double U2_[4];
 	// direction of flux F is from cell1 to cell2
-	vector<double> F_;
+	double F_[4];
 
-	void create_(vector<int>, int, Model*);
+	void create_(int*, int, Model*);
 	void create_();
 };
 

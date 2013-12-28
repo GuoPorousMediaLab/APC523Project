@@ -1,7 +1,6 @@
 #ifndef APC523Project_CELL_H
 #define APC523Project_CELL_H
 
-#include <vector>
 #include "model.h"
 #include "interface.h"
 
@@ -13,28 +12,36 @@ class Interface;
 class Cell
 {
 public:
-	Cell(vector<int> interface_id, double x, double y, double dx, double dy, int id, Model* mymodel)
-	{create_(interface_id, x, y, dx, dy, id, mymodel);};
+	Cell(int *interfaceid, double x, double y, double dx, double dy, int id, Model *mymodel)
+	{create_(interfaceid, x, y, dx, dy, id, mymodel);};
 	Cell(){create_();};
 
 	void set_cell_interfaces();
+		
 	int get_id(){return id_;};
-
-	void initialize();
-
+	
+	double get_x(){return x_;};
+	double get_y(){return y_;};
+	double *get_U(){return U_;};
+	void set_U(double*);
+	
+	void minbeex();
+	void superbeex();
+	void updatex(double);
+	double get_dt();
+	
 	//for test
 	void OutputInterfaceid();
 
 private:
-	vector<int> interfaceid_;
-	vector<Interface*> cell_interfaces_;
+	int interfaceid_[4];
+	Interface *cell_interfaces_[4];	// cell_interfaces_[0]: left interface, [1]: right, [2]: bottom, [3]: up
 	double x_, y_, dx_, dy_;
+	double U_[4];	// U_[0]=rho, U_[1]=rho*u, U_[2]=rho*v, U_[3]=E
 	int id_;
-	Model* mymodel_;
+	Model *mymodel_;
 
-	vector<double> U_;
-
-	void create_(vector<int>, double, double, double, double, int, Model*);
+	void create_(int*, double, double, double, double, int, Model*);
 	void create_();
 
 };
