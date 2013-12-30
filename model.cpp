@@ -168,8 +168,19 @@ void Model::Reconstructx(int slopeLimiter)
 //			default:
 //				cells_iter->minbeex();
 //		}
-		cells_iter->minbeex();
+		//cells_iter->minbeex();
+		cells_iter->superbeex();
 	}	
+}
+
+void Model::Predictx(double dt)
+{
+	vector<Cell>::iterator cells_iter;
+	
+    for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
+    {
+    	cells_iter->predictx(dt);
+    }
 }
 
 void Model::Riemannx(int riemannSolver)
@@ -190,7 +201,9 @@ void Model::Riemannx(int riemannSolver)
 //			default:
 //				interfaces_[i].roe();
 //		}
-		interfaces_[i].roe();
+		//interfaces_[i].roe();
+		//interfaces_[i].hlle();
+		interfaces_[i].hllc();
 	}	
 }
 
@@ -227,13 +240,13 @@ void Model::Outputid()
 void Model::Outputvalue(const char *filename)
 // save the results in a file
 {
-	double p, u, a, rho;
+	double p, u, v, a, rho;
 	double *U;
 	int i;
 	ofstream fs;
 	
 	fs.open(filename);
-	fs << "x\ty\tp\tu\ta\trho" << endl;
+	fs << "x\ty\tp\tu\tv\ta\trho" << endl;
 	
     vector<Cell>::iterator cells_iter;
     for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
@@ -242,10 +255,11 @@ void Model::Outputvalue(const char *filename)
 		
 		rho = U[0];
 		p = (GAMMA - 1.0) * (U[3] - 0.5 * (U[1] * U[1] + U[2] * U[2])/ U[0]);
-		u = sqrt(U[1] * U[1] + U[2] * U[2]) / U[0];
+		u = U[1] / U[0];
+		v = U[2] / U[0];
 		a = sqrt(GAMMA * p / U[0]);
 		
-		fs << cells_iter->get_x() << "\t" << cells_iter->get_y() << "\t" << p << "\t" << u << "\t" << a << "\t" << rho << endl;
+		fs << cells_iter->get_x() << "\t" << cells_iter->get_y() << "\t" << p << "\t" << u << "\t" << v << "\t" << a << "\t" << rho << endl;
 	}
 	
 	fs.close();

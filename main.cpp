@@ -6,7 +6,6 @@
 #include "riemann_solver.h"
 #include "slope_limiter.h"
 
-
 using namespace std;
 
 int main(int argc, char const *argv[])
@@ -37,6 +36,7 @@ int main(int argc, char const *argv[])
     	cout << "step " << step << endl;
 		dt = mymodel.Timestep(CPL);
     	mymodel.Reconstructx(slopeLimiter);
+    	mymodel.Predictx(dt / 2.0);
     	mymodel.Riemannx(riemannSolver);
     	mymodel.Updatex(dt);
     	step++;

@@ -16,19 +16,22 @@ public:
 	Interface(){create_();};
 
 	void set_interface_cells();
+	void initialize();
+	
 	int get_id(){return id_;};
 	Cell *get_cell(int i){return interface_cells_[i];};
 	double *get_F(){return F_;};
+	double *get_U1(){return U1_;};
+	double *get_U2(){return U2_;};
+	
 	void set_U1(double *);
 	void set_U2(double *);
 	void roe();
+	void hlle();
+	void hllc();
 	
-	void initialize();
-
 	// for test
 	void OutputCellid();
-	double *get_U1(){return U1_;};
-	double *get_U2(){return U2_;};
 
 private:
 	int cellid_[2];

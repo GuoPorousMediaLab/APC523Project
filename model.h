@@ -23,6 +23,7 @@ public:
 	
 	void Initialize();
 	void Reconstructx(int);
+	void Predictx(double);
 	void Riemannx(int);
 	void Updatex(double);
 //	void Reorder();

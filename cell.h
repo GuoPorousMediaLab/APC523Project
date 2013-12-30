@@ -19,16 +19,17 @@ public:
 	void set_cell_interfaces();
 		
 	int get_id(){return id_;};
-	
 	double get_x(){return x_;};
 	double get_y(){return y_;};
 	double *get_U(){return U_;};
-	void set_U(double*);
+	double get_dt();
 	
+	void set_U(double*);
 	void minbeex();
 	void superbeex();
+	void predictx(double);
 	void updatex(double);
-	double get_dt();
+
 	
 	//for test
 	void OutputInterfaceid();
@@ -43,7 +44,6 @@ private:
 
 	void create_(int*, double, double, double, double, int, Model*);
 	void create_();
-
 };
 
 #endif
