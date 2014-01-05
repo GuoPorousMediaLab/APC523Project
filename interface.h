@@ -20,6 +20,7 @@ public:
 	
 	int get_id(){return id_;};
 	Cell *get_cell(int i){return interface_cells_[i];};
+	int get_cellid(int i){return cellid_[i];}
 	double *get_F(){return F_;};
 	double *get_U1(){return U1_;};
 	double *get_U2(){return U2_;};

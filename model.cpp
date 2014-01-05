@@ -47,6 +47,9 @@ void Model::create_(int Nx, int Ny)
             else
             {
             	cellid[0] = -1;	// interface is left boundary
+                // -1 -- fixed boundary
+                // -2 -- transimissive boundary
+                // -3 -- reflective boundary
             }
             if (j < Nx_)
 			{
@@ -151,13 +154,13 @@ double Model::Timestep(double CPL)
 	return dt;
 }
 
-void Model::Reconstructx(int slopeLimiter)
+void Model::Reconstructx(int slope_limiter)
 {
 	vector<Cell>::iterator cells_iter;
 	
     for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
     {
-//		switch (slopeLimiter)
+//		switch (slope_limiter)
 //		{
 //			case 1:
 //				cells_iter->minbeex();
@@ -169,7 +172,7 @@ void Model::Reconstructx(int slopeLimiter)
 //				cells_iter->minbeex();
 //		}
 		//cells_iter->minbeex();
-		cells_iter->superbeex();
+		cells_iter->slopeLimiterx( slope_limiter);
 	}	
 }
 
@@ -183,11 +186,11 @@ void Model::Predictx(double dt)
     }
 }
 
-void Model::Riemannx(int riemannSolver)
+void Model::Riemannx(int riemann_solver)
 {
 	for (int i = 0; i < (Nx_ + 1) * Ny_; i++)
 	{
-//		switch (riemannSolver)
+//		switch (riemann_solver)
 //		{
 //			case 1:
 //				interfaces_[i].roe();

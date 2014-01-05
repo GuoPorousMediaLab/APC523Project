@@ -1,5 +1,6 @@
 #include <cmath>
 #include "interface.h"
+#include "cell.h"
 
 void Interface::roe()
 // Roe's Riemann solver for 4-element vectors

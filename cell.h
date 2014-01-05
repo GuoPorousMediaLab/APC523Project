@@ -25,9 +25,13 @@ public:
 	double get_dt();
 	
 	void set_U(double*);
-	void minbeex();
-	void superbeex();
+	void slopeLimiterx(int);
+	void slopeLimitery(int);
+	void minbee(double*, double*, double*, double*, double*);
+	void superbee(double*, double*, double*, double*, double*);
 	void predictx(double);
+	void predicty(double);
+	void predict(double*, double*, double);
 	void updatex(double);
 
 	

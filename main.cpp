@@ -19,8 +19,8 @@ int main(int argc, char const *argv[])
 		abort();
 	}
 
-	int riemannSolver = atoi(argv[1]);
-	int slopeLimiter = atoi(argv[2]);
+	int riemann_solver = atoi(argv[1]);
+	int slope_limiter = atoi(argv[2]);
 
 	int Nx = 100;
     int Ny = 1;
@@ -35,9 +35,9 @@ int main(int argc, char const *argv[])
     {
     	cout << "step " << step << endl;
 		dt = mymodel.Timestep(CPL);
-    	mymodel.Reconstructx(slopeLimiter);
+    	mymodel.Reconstructx(slope_limiter);
     	mymodel.Predictx(dt / 2.0);
-    	mymodel.Riemannx(riemannSolver);
+    	mymodel.Riemannx(riemann_solver);
     	mymodel.Updatex(dt);
     	step++;
     }
