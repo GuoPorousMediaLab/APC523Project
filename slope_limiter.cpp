@@ -21,6 +21,7 @@ void Cell::slopeLimiterx(int slope_limiter)
 
 		if (temp_cellid1 == -1 || temp_cellid1 == -2)
 		{
+			cout << "temp_cellid1 " << temp_cellid1 << endl;
 			cell_interfaces_[0]->set_U1(U_);
 			cell_interfaces_[0]->set_U2(U_);
 			cell_interfaces_[1]->set_U1(U_);
@@ -73,9 +74,10 @@ void Cell::slopeLimiterx(int slope_limiter)
 
 		if (temp_cellid2 == -1 || temp_cellid2 == -2)
 		{
-			cell_interfaces_[0]->set_U1(U_);
-			cell_interfaces_[0]->set_U2(U_);
+			cout << "temp_cellid2 " << temp_cellid2 << endl;
 			cell_interfaces_[1]->set_U1(U_);
+			cell_interfaces_[1]->set_U2(U_);
+			cell_interfaces_[0]->set_U1(U_);
 		}
 		else if (temp_cellid2 == -3)
 		{
@@ -95,21 +97,21 @@ void Cell::slopeLimiterx(int slope_limiter)
 			{
 				case 1:
 					minbee(U2, ghost_U1, ghost_U2, Ul, Ur);
-					cell_interfaces_[1]->set_U2(Ur);
+					cell_interfaces_[1]->set_U2(Ul);
 					minbee(U1, U2, ghost_U1, Ul, Ur);
 					cell_interfaces_[1]->set_U1(Ur);
 					cell_interfaces_[0]->set_U2(Ul);
 					break;
 				case 2:
 					superbee(U2, ghost_U1, ghost_U2, Ul, Ur);
-					cell_interfaces_[1]->set_U2(Ur);
+					cell_interfaces_[1]->set_U2(Ul);
 					superbee(U1, U2, ghost_U1, Ul, Ur);
 					cell_interfaces_[1]->set_U1(Ur);
 					cell_interfaces_[0]->set_U2(Ul);
 					break;
 				default:
 					minbee(U2, ghost_U1, ghost_U2, Ul, Ur);
-					cell_interfaces_[1]->set_U2(Ur);
+					cell_interfaces_[1]->set_U2(Ul);
 					minbee(U1, U2, ghost_U1, Ul, Ur);
 					cell_interfaces_[1]->set_U1(Ur);
 					cell_interfaces_[0]->set_U2(Ul);
@@ -206,9 +208,9 @@ void Cell::slopeLimitery(int slope_limiter)
 
 		if (temp_cellid2 == -1 || temp_cellid2 == -2)
 		{
-			cell_interfaces_[2]->set_U1(U_);
-			cell_interfaces_[2]->set_U2(U_);
 			cell_interfaces_[3]->set_U1(U_);
+			cell_interfaces_[3]->set_U2(U_);
+			cell_interfaces_[2]->set_U1(U_);
 		}
 		else if (temp_cellid2 == -3)
 		{
@@ -228,21 +230,21 @@ void Cell::slopeLimitery(int slope_limiter)
 			{
 				case 1:
 					minbee(U2, ghost_U1, ghost_U2, Ub, Ut);
-					cell_interfaces_[2]->set_U1(Ut);
+					cell_interfaces_[3]->set_U2(Ub);
 					minbee(U1, U2, ghost_U1, Ub, Ut);
 					cell_interfaces_[2]->set_U2(Ub);
 					cell_interfaces_[3]->set_U1(Ut);
 					break;
 				case 2:
 					superbee(U2, ghost_U1, ghost_U2, Ub, Ut);
-					cell_interfaces_[2]->set_U1(Ut);
+					cell_interfaces_[3]->set_U2(Ub);
 					superbee(U1, U2, ghost_U1, Ub, Ut);
 					cell_interfaces_[2]->set_U2(Ub);
 					cell_interfaces_[3]->set_U1(Ut);
 					break;
 				default:
 					minbee(U2, ghost_U1, ghost_U2, Ub, Ut);
-					cell_interfaces_[2]->set_U1(Ut);
+					cell_interfaces_[3]->set_U2(Ub);
 					minbee(U1, U2, ghost_U1, Ub, Ut);
 					cell_interfaces_[2]->set_U2(Ub);
 					cell_interfaces_[3]->set_U1(Ut);
