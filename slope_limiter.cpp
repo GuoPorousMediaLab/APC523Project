@@ -77,7 +77,7 @@ void Cell::slopeLimiterx(int slope_limiter)
 			cout << "temp_cellid2 " << temp_cellid2 << endl;
 			cell_interfaces_[1]->set_U1(U_);
 			cell_interfaces_[1]->set_U2(U_);
-			cell_interfaces_[0]->set_U1(U_);
+			cell_interfaces_[0]->set_U2(U_);
 		}
 		else if (temp_cellid2 == -3)
 		{
