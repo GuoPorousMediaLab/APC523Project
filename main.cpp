@@ -23,7 +23,7 @@ int main(int argc, char const *argv[])
 	int slope_limiter = atoi(argv[2]);
 
 	int Nx = 100;
-    int Ny = 1;
+    int Ny = 100;
     double t, dt, tmax = 0.2, CPL = 0.9;
     
     Model mymodel(Nx, Ny);
@@ -35,15 +35,27 @@ int main(int argc, char const *argv[])
     {
     	cout << "step " << step << endl;
 		dt = mymodel.Timestep(CPL);
+		
     	mymodel.Reconstructx(slope_limiter);
-    	mymodel.Predictx(dt / 2.0);
+    	mymodel.Predictx(dt / 4.0);
     	mymodel.Riemannx(riemann_solver);
-    	mymodel.Updatex(dt);
+    	mymodel.Updatex(dt / 2.0);
+    	
+    	mymodel.Reconstructy(slope_limiter);
+    	mymodel.Predicty(dt / 2.0);
+    	mymodel.Riemanny(riemann_solver);
+    	mymodel.Updatey(dt / 1.0);
+    	
+    	mymodel.Reconstructx(slope_limiter);
+    	mymodel.Predictx(dt / 4.0);
+    	mymodel.Riemannx(riemann_solver);
+    	mymodel.Updatex(dt / 2.0);
+    	
     	step++;
     }
 
     // for test
-//    mymodel.Outputid();
+    //mymodel.Outputid();
     mymodel.Outputvalue("result.txt");
 	
 	return 0;

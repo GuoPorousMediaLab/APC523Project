@@ -2,14 +2,25 @@
 #include "interface.h"
 #include "cell.h"
 
-void Interface::roe()
+void Interface::roe(char direction)
 // Roe's Riemann solver for 4-element vectors
 // Left and right values of the Riemann problem are defined by U1_[4] and U2_[4]
 // The calculated numerical flux is stored in F_[4]
 // Reference: Toro, section 11.2
 {
-	double h1, h2, h, p1, p2, u, v, a, theta, delta[4], dv[4];
+	double h1, h2, h, p1, p2, u, v, a, theta, delta[4], dv[4], temp;
 	int i;
+	
+	if (direction == 'y')
+	{
+			temp = U1_[1];
+			U1_[1] = U1_[2];
+			U1_[2] = temp;
+			
+			temp = U2_[1];
+			U2_[1] = U2_[2];
+			U2_[2] = temp;			
+	}
 	
 	// calculate pressure and enthalpy in left and right region
 	p1 = (GAMMA - 1.0) * (U1_[3] - 0.5 * (U1_[1] * U1_[1] + U1_[2] * U1_[2]) / U1_[0]);
@@ -63,17 +74,43 @@ void Interface::roe()
 		F_[2] = U2_[1] * U2_[2] / U2_[0];
 		F_[3] = U2_[1] * h2;
 	}
+	
+	if (direction == 'y')
+	{
+		temp = F_[1];
+		F_[1] = F_[2];
+		F_[2] = temp;
+		
+		temp = U1_[1];
+		U1_[1] = U1_[2];
+		U1_[2] = temp;
+		
+		temp = U2_[1];
+		U2_[1] = U2_[2];
+		U2_[2] = temp;
+	}
 }
 
-void Interface::hlle()
+void Interface::hlle(char direction)
 // HLLE Riemann solver for 4-element vectors
 // Left and right values of the Riemann problem are defined by U1_[4] and U2_[4]
 // The calculated numerical flux is stored in F_[4]
 // Reference: Toro, section 10.3
 {
-	double h1, h2, h, p1, p2, u1, u2, u, v1, v2, v, a1, a2, a, theta, s1, s2, F1[4], F2[4];
+	double h1, h2, h, p1, p2, u1, u2, u, v1, v2, v, a1, a2, a, theta, s1, s2, F1[4], F2[4], temp;
 	int i;
 
+	if (direction == 'y')
+	{
+			temp = U1_[1];
+			U1_[1] = U1_[2];
+			U1_[2] = temp;
+			
+			temp = U2_[1];
+			U2_[1] = U2_[2];
+			U2_[2] = temp;			
+	}
+	
 	// calculate the pressure, velocity and enthalpy in the left and right region	
 	p1 = (GAMMA - 1.0) * (U1_[3] - 0.5 * (U1_[1] * U1_[1] + U1_[2] * U1_[2]) / U1_[0]);
 	p2 = (GAMMA - 1.0) * (U2_[3] - 0.5 * (U2_[1] * U2_[1] + U2_[2] * U2_[2]) / U2_[0]);
@@ -117,16 +154,42 @@ void Interface::hlle()
 	else	// use numerical flux in the right region
 		for (i = 0; i < 4; i++)
 			F_[i] = F2[i];
+			
+	if (direction == 'y')
+	{
+		temp = F_[1];
+		F_[1] = F_[2];
+		F_[2] = temp;
+		
+		temp = U1_[1];
+		U1_[1] = U1_[2];
+		U1_[2] = temp;
+		
+		temp = U2_[1];
+		U2_[1] = U2_[2];
+		U2_[2] = temp;
+	}
 }
 
-void Interface::hllc()
+void Interface::hllc(char direction)
 // HLLC Riemann solver for 4-element vectors
 // Left and right values of the Riemann problem are defined by U1_[4] and U2_[4]
 // The calculated numerical flux is stored in F_[4]
 // Reference: Toro, section 10.6
 {
-	double h1, h2, p1, p2, pstar, u1, u2, a1, a2, s1, s2, sstar, Ustar[4], F1[4], F2[4];
+	double h1, h2, p1, p2, pstar, u1, u2, a1, a2, s1, s2, sstar, Ustar[4], F1[4], F2[4], temp;
 	int i;
+	
+	if (direction == 'y')
+	{
+			temp = U1_[1];
+			U1_[1] = U1_[2];
+			U1_[2] = temp;
+			
+			temp = U2_[1];
+			U2_[1] = U2_[2];
+			U2_[2] = temp;			
+	}
 	
 	// calculate the pressure, velocity and enthalpy in the left and right region	
 	p1 = (GAMMA - 1.0) * (U1_[3] - 0.5 * (U1_[1] * U1_[1] + U1_[2] * U1_[2]) / U1_[0]);
@@ -186,4 +249,19 @@ void Interface::hllc()
 	else	// use numerical flux in the right region
 		for (i = 0; i < 4; i++)
 			F_[i] = F2[i];
+			
+	if (direction == 'y')
+	{
+		temp = F_[1];
+		F_[1] = F_[2];
+		F_[2] = temp;
+		
+		temp = U1_[1];
+		U1_[1] = U1_[2];
+		U1_[2] = temp;
+		
+		temp = U2_[1];
+		U2_[1] = U2_[2];
+		U2_[2] = temp;
+	}
 }

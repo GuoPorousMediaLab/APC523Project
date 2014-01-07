@@ -25,15 +25,13 @@ public:
 	double get_dt();
 	
 	void set_U(double*);
-	void slopeLimiterx(int);
-	void slopeLimitery(int);
+	
+	void reconstruct(int, char);
+	void predict(double, char);
+	void update(double, char);
+	
 	void minbee(double*, double*, double*, double*, double*);
 	void superbee(double*, double*, double*, double*, double*);
-	void predictx(double);
-	void predicty(double);
-	void predict(double*, double*, double);
-	void updatex(double);
-
 	
 	//for test
 	void OutputInterfaceid();

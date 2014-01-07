@@ -44,12 +44,112 @@ void Cell::set_U(double *U)
 	}
 }
 
-void Cell::updatex(double dt)
-// update vector U using the flux F of the left and right interfaces
+void Cell::predict(double dt, char direction)
 {
-	for (int i = 0; i < 4; i++)
+	double Ul[4], Ur[4], Fl[4], Fr[4], pl, pr, hl, hr;
+	int interfaceid1, interfaceid2, i;
+
+	if (direction == 'x')
 	{
-		U_[i] = U_[i] + dt / dx_  * (cell_interfaces_[0]->get_F()[i] - cell_interfaces_[1]->get_F()[i]);
+		interfaceid1 = 0;
+		interfaceid2 = 1;
+	}
+	else if (direction == 'y')
+	{
+		interfaceid1 = 2;
+		interfaceid2 = 3;
+	}
+	for (i = 0; i < 4; i++)
+	{
+		Ul[i] = cell_interfaces_[interfaceid1]->get_U2()[i];
+		Ur[i] = cell_interfaces_[interfaceid2]->get_U1()[i];	
+	}
+	
+	pl = (GAMMA - 1.0) * (Ul[3] - 0.5 * (Ul[1] * Ul[1] + Ul[2] * Ul[2]) / Ul[0]);
+	pr = (GAMMA - 1.0) * (Ur[3] - 0.5 * (Ur[1] * Ur[1] + Ur[2] * Ur[2]) / Ur[0]);
+	hl = (Ul[3] + pl) / Ul[0];
+	hr = (Ur[3] + pr) / Ur[0];
+	
+	if (direction == 'x')
+	{
+		Fl[0] = Ul[1];
+		Fl[1] = Ul[1] * Ul[1] / Ul[0] + pl;
+		Fl[2] = Ul[1] * Ul[2] / Ul[0];
+		Fl[3] = Ul[1] * hl;
+		Fr[0] = Ur[1];
+		Fr[1] = Ur[1] * Ur[1] / Ur[0] + pr;
+		Fr[2] = Ur[1] * Ur[2] / Ur[0];
+		Fr[3] = Ur[1] * hr;
+		for (i = 0; i < 4; i++)
+		{
+			Ul[i] = Ul[i] + dt / dx_ * (Fl[i] - Fr[i]);
+			Ur[i] = Ur[i] + dt / dx_ * (Fl[i] - Fr[i]);
+		}
+	}
+	else if (direction == 'y')
+	{
+		Fl[0] = Ul[2];
+		Fl[1] = Ul[1] * Ul[2] / Ul[0];
+		Fl[2] = Ul[2] * Ul[2] / Ul[0] + pl;
+		Fl[3] = Ul[2] * hl;
+		Fr[0] = Ur[2];
+		Fr[1] = Ur[1] * Ur[2] / Ur[0];
+		Fr[2] = Ur[2] * Ur[2] / Ur[0] + pr;
+		Fr[3] = Ur[2] * hr;
+		for (i = 0; i < 4; i++)
+		{
+			Ul[i] = Ul[i] + dt / dy_ * (Fl[i] - Fr[i]);
+			Ur[i] = Ur[i] + dt / dy_ * (Fl[i] - Fr[i]);
+		}
+	}
+
+	cell_interfaces_[interfaceid1]->set_U2(Ul);
+	cell_interfaces_[interfaceid2]->set_U1(Ur);
+	
+	if (cell_interfaces_[interfaceid1]->get_cellid(0) == -3)
+	{
+		if (direction == 'x')
+		{
+			Ul[1] = -Ul[1];
+		}
+		else if (direction == 'y')
+		{
+			Ul[2] = -Ul[2];
+		}
+		cell_interfaces_[interfaceid1]->set_U1(Ul);
+	}
+	if (cell_interfaces_[interfaceid2]->get_cellid(1) == -3)
+	{
+		if (direction == 'x')
+		{
+			Ur[1] = -Ur[1];
+		}
+		else if (direction == 'y')
+		{
+			Ur[2] = -Ur[2];
+		}
+		cell_interfaces_[interfaceid2]->set_U2(Ur);
+	}
+}
+
+void Cell::update(double dt, char direction)
+// update vector U using the flux F from the cell boundaries
+{
+	int i;
+	
+	if (direction == 'x')
+	{
+		for (i = 0; i < 4; i++)
+		{
+			U_[i] = U_[i] + dt / dx_  * (cell_interfaces_[0]->get_F()[i] - cell_interfaces_[1]->get_F()[i]);
+		}
+	}
+	else if (direction == 'y')
+	{
+		for (i = 0; i < 4; i++)
+		{
+			U_[i] = U_[i] + dt / dy_  * (cell_interfaces_[2]->get_F()[i] - cell_interfaces_[3]->get_F()[i]);
+		}
 	}
 }
 
@@ -62,7 +162,7 @@ double Cell::get_dt()
 	p = (GAMMA - 1.0) * (U_[3] - 0.5 * (U_[1] * U_[1] + U_[2] * U_[2]) / U_[0]);
 	a = sqrt(GAMMA * p / U_[0]);
 	
-	return(dx_/ (u + a));
+	return(fmin(dx_/ (u + a), dy_/ (u + a)));
 }
 
 void Cell::OutputInterfaceid()

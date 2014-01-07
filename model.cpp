@@ -13,10 +13,10 @@ void Model::create_(int Nx, int Ny)
 
 	// initialize cells
 	int interfaceid[4]; // interfaceid for each cell
-	double centerx = 0.5;
+	double centerx = 0.0;
     double centery = 0.0;
-    double dx = 0.01;
-    double dy = 0.01;
+    double dx = 1.0 / Nx;
+    double dy = 1.0 / Ny;
     double startx = centerx - (Nx_ - 1) / 2.0 * dx;
     double starty = centery - (Ny_ - 1) / 2.0 * dy;
     int i, j;
@@ -110,26 +110,79 @@ void Model::create_()
 }
 
 void Model::Initialize()
-// set up a Riemann problem for testing
-// U = Ul when x < x0 and U = Ur when x > x0
 {
-	double rho1 = 1.0, u1 = 0.75, p1 = 1.0, rho2 = 0.125, u2 = 0.0, p2 = 0.1, x0 = 0.3;
+// set up a Riemann problem in x direction for testing
+//	double rho1 = 1.4, u1 = 3.0, p1 = 1.0, rho2 = 1.4, u2 = 0.0, p2 = 1.0, x0 = -0.4;
+//	double Ul[4], Ur[4];
+//	int i;
+//	
+//	Ul[0] = rho1;
+//	Ul[1] = rho1 * u1;
+//	Ul[2] = 0.0;
+//	Ul[3] = p1 / (GAMMA - 1.0) + 0.5 * rho1 * u1 * u1;
+//	Ur[0] = rho2;
+//	Ur[1] = rho2 * u2;
+//	Ur[2] = 0.0;
+//	Ur[3] = p2 / (GAMMA - 1.0) + 0.5 * rho2 * u2 * u2;
+//	
+//	vector<Cell>::iterator cells_iter;
+//    for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
+//    {
+//    	if (cells_iter->get_x() < x0)
+//    	{
+//			cells_iter->set_U(Ul);
+//    	}
+//    	else
+//    	{
+//			cells_iter->set_U(Ur);
+//    	}
+//    }
+
+// set up a Riemann problem in y direction for testing
+//	double rho1 = 1.0, v1 = 0.75, p1 = 1.0, rho2 = 0.125, v2 = 0.0, p2 = 0.1, y0 = -0.2;
+//	double Ul[4], Ur[4];
+//	int i;
+//	
+//	Ul[0] = rho1;
+//	Ul[1] = 0.0;
+//	Ul[2] = rho1 * v1;
+//	Ul[3] = p1 / (GAMMA - 1.0) + 0.5 * rho1 * v1 * v1;
+//	Ur[0] = rho2;
+//	Ur[1] = 0.0;
+//	Ur[2] = rho2 * v2;
+//	Ur[3] = p2 / (GAMMA - 1.0) + 0.5 * rho2 * v2 * v2;
+//	
+//	vector<Cell>::iterator cells_iter;
+//    for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
+//    {
+//    	if (cells_iter->get_y() < y0)
+//    	{
+//			cells_iter->set_U(Ul);
+//    	}
+//    	else
+//    	{
+//			cells_iter->set_U(Ur);
+//    	}
+//    }
+
+// set up a "tilted" Riemann problem for 2d testing
+	double rho1 = 1.0, v1 = 0.75, p1 = 1.0, rho2 = 0.125, v2 = 0.0, p2 = 0.1;
 	double Ul[4], Ur[4];
 	int i;
 	
 	Ul[0] = rho1;
-	Ul[1] = rho1 * u1;
-	Ul[2] = 0.0;
-	Ul[3] = p1 / (GAMMA - 1.0) + 0.5 * rho1 * u1 * u1;
+	Ul[1] = 0.0;
+	Ul[2] = rho1 * v1;
+	Ul[3] = p1 / (GAMMA - 1.0) + 0.5 * rho1 * v1 * v1;
 	Ur[0] = rho2;
-	Ur[1] = rho2 * u2;
-	Ur[2] = 0.0;
-	Ur[3] = p2 / (GAMMA - 1.0) + 0.5 * rho2 * u2 * u2;
+	Ur[1] = 0.0;
+	Ur[2] = rho2 * v2;
+	Ur[3] = p2 / (GAMMA - 1.0) + 0.5 * rho2 * v2 * v2;
 	
 	vector<Cell>::iterator cells_iter;
     for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
     {
-    	if (cells_iter->get_x() < x0)
+    	if (cells_iter->get_y() - cells_iter->get_x() > 0.0)
     	{
 			cells_iter->set_U(Ul);
     	}
@@ -160,19 +213,17 @@ void Model::Reconstructx(int slope_limiter)
 	
     for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
     {
-//		switch (slope_limiter)
-//		{
-//			case 1:
-//				cells_iter->minbeex();
-//				break;
-//			case 2:
-//				cells_iter->superbeex();
-//				break;
-//			default:
-//				cells_iter->minbeex();
-//		}
-		//cells_iter->minbeex();
-		cells_iter->slopeLimiterx( slope_limiter);
+		cells_iter->reconstruct(slope_limiter, 'x');
+	}	
+}
+
+void Model::Reconstructy(int slope_limiter)
+{
+	vector<Cell>::iterator cells_iter;
+	
+    for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
+    {
+		cells_iter->reconstruct(slope_limiter, 'y');
 	}	
 }
 
@@ -182,7 +233,17 @@ void Model::Predictx(double dt)
 	
     for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
     {
-    	cells_iter->predictx(dt);
+    	cells_iter->predict(dt, 'x');
+    }
+}
+
+void Model::Predicty(double dt)
+{
+	vector<Cell>::iterator cells_iter;
+	
+    for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
+    {
+    	cells_iter->predict(dt, 'y');
     }
 }
 
@@ -190,23 +251,41 @@ void Model::Riemannx(int riemann_solver)
 {
 	for (int i = 0; i < (Nx_ + 1) * Ny_; i++)
 	{
-//		switch (riemann_solver)
-//		{
-//			case 1:
-//				interfaces_[i].roe();
-//				break;
-//			case 2:
-//				interfaces_[i].hlle();
-//				break;
-//			case 3:
-//				interfaces_[i].hllc();
-//				break;
-//			default:
-//				interfaces_[i].roe();
-//		}
-		//interfaces_[i].roe();
-		//interfaces_[i].hlle();
-		interfaces_[i].hllc();
+		switch (riemann_solver)
+		{
+			case 1:
+				interfaces_[i].roe('x');
+				break;
+			case 2:
+				interfaces_[i].hlle('x');
+				break;
+			case 3:
+				interfaces_[i].hllc('x');
+				break;
+			default:
+				interfaces_[i].roe('x');
+		}
+	}	
+}
+
+void Model::Riemanny(int riemann_solver)
+{
+	for (int i = (Nx_ + 1) * Ny_; i < 2 * Nx_ * Ny_ + Nx_ + Ny_; i++)
+	{
+		switch (riemann_solver)
+		{
+			case 1:
+				interfaces_[i].roe('y');
+				break;
+			case 2:
+				interfaces_[i].hlle('y');
+				break;
+			case 3:
+				interfaces_[i].hllc('y');
+				break;
+			default:
+				interfaces_[i].roe('y');
+		}
 	}	
 }
 
@@ -217,7 +296,18 @@ void Model::Updatex(double dt)
 	
     for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
 	{
-		cells_iter->updatex(dt);
+		cells_iter->update(dt, 'x');
+	}	
+}
+
+void Model::Updatey(double dt)
+// update the value of each cell
+{
+	vector<Cell>::iterator cells_iter;
+	
+    for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
+	{
+		cells_iter->update(dt, 'y');
 	}	
 }
 

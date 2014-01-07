@@ -3,278 +3,153 @@
 #include "cell.h"
 #include "interface.h"
 
-void Cell::slopeLimiterx(int slope_limiter)
+void Cell::reconstruct(int slope_limiter, char direction)
 {
-	double *U1, *U2, *U3;
-	double ghost_U1[4], ghost_U2[4];
-	double Ul[4], Ur[4];	
+	double U1[4], U2[4], Ul[4], Ur[4];
+	// U1, U2 stores the values in the neighboring cells; Ul, Ur stores the values after reconstruction
 	int i;
-	int temp_cellid1, temp_cellid2;
+	int interfaceid1, interfaceid2, cellid1, cellid2;
 
-	temp_cellid1 = cell_interfaces_[0]->get_cellid(0);
-	temp_cellid2 = cell_interfaces_[1]->get_cellid(1);
-
-	if (temp_cellid1 < 0)	// left interface is left boundary
+	if (direction == 'x')
+	// if solving in x direction, set the two interfaces as left and right
 	{
-		U2 = U_;	// read value from current cell
-		U3 = cell_interfaces_[1]->get_cell(1)->get_U();	// read value from right interface's right cell
-
-		if (temp_cellid1 == -1 || temp_cellid1 == -2)
-		{
-			cout << "temp_cellid1 " << temp_cellid1 << endl;
-			cell_interfaces_[0]->set_U1(U_);
-			cell_interfaces_[0]->set_U2(U_);
-			cell_interfaces_[1]->set_U1(U_);
-		}
-		else if (temp_cellid1 == -3)
-		{
-			for (i = 0; i < 4; ++i)
-			{
-				if (i == 1)
-				{
-					ghost_U1[i] = - U2[i];
-					ghost_U2[i] = - U3[i];
-				}
-				else { 
-					ghost_U1[i] = U2[i];
-					ghost_U2[i] = U3[i];
-				}
-			}
-			switch (slope_limiter)
-			{
-				case 1:
-					minbee(ghost_U1, ghost_U2, U2, Ul, Ur);
-					cell_interfaces_[0]->set_U1(Ur);
-					minbee(ghost_U2, U2, U3, Ul, Ur);
-					cell_interfaces_[0]->set_U2(Ul);
-					cell_interfaces_[1]->set_U1(Ur);
-					break;
-				case 2:
-					superbee(ghost_U1, ghost_U2, U2, Ul, Ur);
-					cell_interfaces_[0]->set_U1(Ur);
-					superbee(ghost_U2, U2, U3, Ul, Ur);
-					cell_interfaces_[0]->set_U2(Ul);
-					cell_interfaces_[1]->set_U1(Ur);
-					break;
-				default:
-					minbee(ghost_U1, ghost_U2, U2, Ul, Ur);
-					cell_interfaces_[0]->set_U1(Ur);
-					minbee(ghost_U2, U2, U3, Ul, Ur);
-					cell_interfaces_[0]->set_U2(Ul);
-					cell_interfaces_[1]->set_U1(Ur);
-			}
-		}
-		
+		interfaceid1 = 0;
+		interfaceid2 = 1;
 	}
-	else if (temp_cellid2 < 0)	// right interface is right boundary
+	else if (direction == 'y')
+	// if solving in y direction, set the two interfaces as bottom and top
 	{
-		U1 = cell_interfaces_[0]->get_cell(0)->get_U();
-		U2 = U_;	// read value from current cell
-		U3 = cell_interfaces_[1]->get_cell(1)->get_U();	// read value from right interface's right cell
-
-		if (temp_cellid2 == -1 || temp_cellid2 == -2)
-		{
-			cout << "temp_cellid2 " << temp_cellid2 << endl;
-			cell_interfaces_[1]->set_U1(U_);
-			cell_interfaces_[1]->set_U2(U_);
-			cell_interfaces_[0]->set_U2(U_);
-		}
-		else if (temp_cellid2 == -3)
-		{
-			for (i = 0; i < 4; ++i)
-			{
-				if (i == 1)
-				{
-					ghost_U1[i] = - U2[i];
-					ghost_U2[i] = - U1[i];
-				}
-				else { 
-					ghost_U1[i] = U2[i];
-					ghost_U2[i] = U1[i];
-				}
-			}
-			switch (slope_limiter)
-			{
-				case 1:
-					minbee(U2, ghost_U1, ghost_U2, Ul, Ur);
-					cell_interfaces_[1]->set_U2(Ul);
-					minbee(U1, U2, ghost_U1, Ul, Ur);
-					cell_interfaces_[1]->set_U1(Ur);
-					cell_interfaces_[0]->set_U2(Ul);
-					break;
-				case 2:
-					superbee(U2, ghost_U1, ghost_U2, Ul, Ur);
-					cell_interfaces_[1]->set_U2(Ul);
-					superbee(U1, U2, ghost_U1, Ul, Ur);
-					cell_interfaces_[1]->set_U1(Ur);
-					cell_interfaces_[0]->set_U2(Ul);
-					break;
-				default:
-					minbee(U2, ghost_U1, ghost_U2, Ul, Ur);
-					cell_interfaces_[1]->set_U2(Ul);
-					minbee(U1, U2, ghost_U1, Ul, Ur);
-					cell_interfaces_[1]->set_U1(Ur);
-					cell_interfaces_[0]->set_U2(Ul);
-			}
-		}		
+		interfaceid1 = 2;
+		interfaceid2 = 3;
 	}
-	else
-	{
-		U1 = cell_interfaces_[0]->get_cell(0)->get_U();	// read value from left interface's left cell
-		U2 = U_;	// read value from current cell
-		U3 = cell_interfaces_[1]->get_cell(1)->get_U();	// read value from right interface's right cell
-
-		switch (slope_limiter)
-		{
-			case 1:
-				minbee(U1, U2, U3, Ul, Ur);
-				break;
-			case 2:
-				superbee(U1, U2, U3, Ul, Ur);
-				break;
-			default:
-				minbee(U1, U2, U3, Ul, Ur);
-		}
-		cell_interfaces_[0]->set_U2(Ul);
-		cell_interfaces_[1]->set_U1(Ur);
-	}
-}
-
-void Cell::slopeLimitery(int slope_limiter)
-{
-	double *U1, *U2, *U3;
-	double ghost_U1[4], ghost_U2[4];
-	double Ub[4], Ut[4];	
-	int i;
-	int temp_cellid1, temp_cellid2;
-
-	temp_cellid1 = cell_interfaces_[2]->get_cellid(0);
-	temp_cellid2 = cell_interfaces_[3]->get_cellid(1);
 	
-	if (temp_cellid1 < 0)	// bottom interface is bottom boundary
-	{
-		U2 = U_;	// read value from current cell
-		U3 = cell_interfaces_[3]->get_cell(1)->get_U();	// read value from top interface's above cell
+	// get the cellid of the two neighboring cells
+	cellid1 = cell_interfaces_[interfaceid1]->get_cellid(0);
+	cellid2 = cell_interfaces_[interfaceid2]->get_cellid(1);
 
-		if (temp_cellid1 == -1 || temp_cellid1 == -2)
+	// set up U1[4]
+	if (cellid1 == -1 || cellid1 == -2)
+	// if left interface is a transmissive boundary, create a ghost cell identical to current cell
+	{
+		for (i = 0; i < 4; i++)
 		{
-			cell_interfaces_[2]->set_U1(U_);
-			cell_interfaces_[2]->set_U2(U_);
-			cell_interfaces_[3]->set_U1(U_);
+			U1[i] = U_[i];
 		}
-		else if (temp_cellid1 == -3)
-		{
-			for (i = 0; i < 4; ++i)
-			{
-				if (i == 2)
-				{
-					ghost_U1[i] = - U2[i];
-					ghost_U2[i] = - U3[i];
-				}
-				else { 
-					ghost_U1[i] = U2[i];
-					ghost_U2[i] = U3[i];
-				}
-			}
-			switch (slope_limiter)
-			{
-				case 1:
-					minbee(ghost_U1, ghost_U2, U2, Ub, Ut);
-					cell_interfaces_[2]->set_U1(Ut);
-					minbee(ghost_U2, U2, U3, Ub, Ut);
-					cell_interfaces_[2]->set_U2(Ub);
-					cell_interfaces_[3]->set_U1(Ut);
-					break;
-				case 2:
-					superbee(ghost_U1, ghost_U2, U2, Ub, Ut);
-					cell_interfaces_[2]->set_U1(Ut);
-					superbee(ghost_U2, U2, U3, Ub, Ut);
-					cell_interfaces_[2]->set_U2(Ub);
-					cell_interfaces_[3]->set_U1(Ut);
-					break;
-				default:
-					minbee(ghost_U1, ghost_U2, U2, Ub, Ut);
-					cell_interfaces_[2]->set_U1(Ut);
-					minbee(ghost_U2, U2, U3, Ub, Ut);
-					cell_interfaces_[2]->set_U2(Ub);
-					cell_interfaces_[3]->set_U1(Ut);
-			}
-		}
-		
 	}
-	else if (temp_cellid2 < 0)	// top interface is top boundary
+	else if (cellid1 == -3)
+	// if left interface is a reflective boundary, create a ghost cell with (rho, -rho*u, rho*v, E) or (rho, rho*u, -rho*v, E)
 	{
-		U1 = cell_interfaces_[2]->get_cell(0)->get_U();
-
-		if (temp_cellid2 == -1 || temp_cellid2 == -2)
+		U1[0] = U_[0];
+		U1[3] = U_[3];
+		if (direction == 'x')
 		{
-			cell_interfaces_[3]->set_U1(U_);
-			cell_interfaces_[3]->set_U2(U_);
-			cell_interfaces_[2]->set_U1(U_);
+			U1[1] = -U_[1];
+			U1[2] = U_[2];
 		}
-		else if (temp_cellid2 == -3)
+		else if (direction == 'y');
 		{
-			for (i = 0; i < 4; ++i)
-			{
-				if (i == 2)
-				{
-					ghost_U1[i] = - U2[i];
-					ghost_U2[i] = - U1[i];
-				}
-				else { 
-					ghost_U1[i] = U2[i];
-					ghost_U2[i] = U1[i];
-				}
-			}
-			switch (slope_limiter)
-			{
-				case 1:
-					minbee(U2, ghost_U1, ghost_U2, Ub, Ut);
-					cell_interfaces_[3]->set_U2(Ub);
-					minbee(U1, U2, ghost_U1, Ub, Ut);
-					cell_interfaces_[2]->set_U2(Ub);
-					cell_interfaces_[3]->set_U1(Ut);
-					break;
-				case 2:
-					superbee(U2, ghost_U1, ghost_U2, Ub, Ut);
-					cell_interfaces_[3]->set_U2(Ub);
-					superbee(U1, U2, ghost_U1, Ub, Ut);
-					cell_interfaces_[2]->set_U2(Ub);
-					cell_interfaces_[3]->set_U1(Ut);
-					break;
-				default:
-					minbee(U2, ghost_U1, ghost_U2, Ub, Ut);
-					cell_interfaces_[3]->set_U2(Ub);
-					minbee(U1, U2, ghost_U1, Ub, Ut);
-					cell_interfaces_[2]->set_U2(Ub);
-					cell_interfaces_[3]->set_U1(Ut);
-			}
-		}		
+			U1[1] = U_[1];
+			U1[2] = -U_[2];
+		}
 	}
 	else
+	// if left interface is not a boundary, copy left cell to U1
 	{
-		U1 = cell_interfaces_[2]->get_cell(0)->get_U();	// read value from left interface's left cell
-		U2 = U_;	// read value from current cell
-		U3 = cell_interfaces_[3]->get_cell(1)->get_U();	// read value from right interface's right cell
-
-		switch (slope_limiter)
+		for (i = 0; i < 4; i++)
 		{
-			case 1:
-				minbee(U1, U2, U3, Ub, Ut);
-				break;
-			case 2:
-				superbee(U1, U2, U3, Ub, Ut);
-				break;
-			default:
-				minbee(U1, U2, U3, Ub, Ut);
+			U1[i] = cell_interfaces_[interfaceid1]->get_cell(0)->get_U()[i];
 		}
-		cell_interfaces_[2]->set_U2(Ub);
-		cell_interfaces_[3]->set_U1(Ut);
+	}
+	
+	// set up U2[4]
+	if (cellid2 == -1 || cellid2 == -2)
+	// if right interface is a transmissive boundary, create a ghost cell identical to current cell
+	{
+		for (i = 0; i < 4; i++)
+		{
+			U2[i] = U_[i];
+		}
+	}
+	else if (cellid2 == -3)
+	// if right interface is a reflective boundary, create a ghost cell with (rho, -rho*u, rho*v, E) or (rho, rho*u, -rho*v, E)
+	{
+		U2[0] = U_[0];
+		U2[3] = U_[3];
+		if (direction == 'x')
+		{
+			U2[1] = -U_[1];
+			U2[2] = U_[2];
+		}
+		else if (direction == 'y')
+		{
+			U2[1] = U_[1];
+			U2[2] = -U_[2];
+		}
+	}
+	else
+	// if right interface is not a boundary, copy right cell to U2
+	{
+		for (i = 0; i < 4; i++)
+		{
+			U2[i] = cell_interfaces_[interfaceid2]->get_cell(1)->get_U()[i];
+		}
+	}
+	
+	// apply slope limiter
+	switch (slope_limiter)
+	{
+		case 1:
+			minbee(U1, U_, U2, Ul, Ur);
+			break;
+		case 2:
+			superbee(U1, U_, U2, Ul, Ur);
+			break;
+		default:
+			minbee(U1, U_, U2, Ul, Ur);
+	}
+	
+	// use the reconstructed value Ul and Ur to set up the interface states for the Riemann solver
+	cell_interfaces_[interfaceid1]->set_U2(Ul);
+	cell_interfaces_[interfaceid2]->set_U1(Ur);
+	
+	// set up U1 for left boundary
+	if (cellid1 == -1 || cellid1 == -2)
+	{
+		cell_interfaces_[interfaceid1]->set_U1(Ul);
+	}
+	else if (cellid1 == -3)
+	{
+		if (direction == 'x')
+		{
+			Ul[1] = -Ul[1];
+		}
+		else if (direction == 'y')
+		{
+			Ul[2] = -Ul[2];
+		}
+		cell_interfaces_[interfaceid1]->set_U1(Ul);
+	}
+	// set up U2 for right boundary
+	if (cellid2 == -1 || cellid2 == -2)
+	{
+		cell_interfaces_[interfaceid2]->set_U2(Ur);
+	}
+	else if (cellid2 == -3)
+	{
+		if (direction == 'x')
+		{
+			Ur[1] = -Ur[1];
+		}
+		else if (direction == 'y')
+		{
+			Ur[2] = -Ur[2];
+		}
+		cell_interfaces_[interfaceid2]->set_U2(Ur);
 	}
 }
 
 void Cell::minbee(double* U1, double* U2, double* U3, double* Ul, double* Ur)
-// Minbee slope limiter
+// minbee slope limiter
 {
 	double deltal, deltar, delta;
 
@@ -319,47 +194,5 @@ void Cell::superbee(double* U1, double* U2, double* U3, double* Ul, double* Ur)
 				
 		Ul[i] = U2[i] - 0.5 * delta;
 		Ur[i] = U2[i] + 0.5 * delta;
-	}
-}
-
-void Cell::predictx(double dt)
-{
-	double *Ul, *Ur;
-	Ul = cell_interfaces_[0]->get_U2();
-	Ur = cell_interfaces_[1]->get_U1();	
-	predict(Ul, Ur, dt);
-}
-
-void Cell::predicty(double dt)
-{
-	double *Ub, *Ut;
-	Ub = cell_interfaces_[2]->get_U2();
-	Ut = cell_interfaces_[3]->get_U1();
-	predict(Ub, Ut, dt);
-}
-
-void Cell::predict(double* Ul, double* Ur, double dt)
-{
-	double Fl[4], Fr[4], pl, pr, hl, hr;
-	int i;
-	
-	pl = (GAMMA - 1.0) * (Ul[3] - 0.5 * (Ul[1] * Ul[1] + Ul[2] * Ul[2]) / Ul[0]);
-	pr = (GAMMA - 1.0) * (Ur[3] - 0.5 * (Ur[1] * Ur[1] + Ur[2] * Ur[2]) / Ur[0]);
-	hl = (Ul[3] + pl) / Ul[0];
-	hr = (Ur[3] + pr) / Ur[0];
-	
-	Fl[0] = Ul[1];
-	Fl[1] = Ul[1] * Ul[1] / Ul[0] + pl;
-	Fl[2] = Ul[1] * Ul[2] / Ul[0];
-	Fl[3] = Ul[1] * hl;
-	Fr[0] = Ur[1];
-	Fr[1] = Ur[1] * Ur[1] / Ur[0] + pr;
-	Fr[2] = Ur[1] * Ur[2] / Ur[0];
-	Fr[3] = Ur[1] * hr;
-	
-	for (i = 0; i < 4; i++)
-	{
-		Ul[i] = Ul[i] + dt / dx_ * (Fl[i] - Fr[i]);
-		Ur[i] = Ur[i] + dt / dx_ * (Fl[i] - Fr[i]);
 	}
 }

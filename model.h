@@ -22,14 +22,16 @@ public:
 	Interface *get_interface(int i){return &interfaces_[i];};
 	
 	void Initialize();
+	
 	void Reconstructx(int);
 	void Predictx(double);
 	void Riemannx(int);
 	void Updatex(double);
-//	void Reorder();
-//	void Reconstructy(int);
-//	void Riemanny(int);
-//	void Updatey(double);
+	
+	void Reconstructy(int);
+	void Predicty(double);
+	void Riemanny(int);
+	void Updatey(double);
 	double Timestep(double);
 	
 	// for test

@@ -27,9 +27,9 @@ public:
 	
 	void set_U1(double *);
 	void set_U2(double *);
-	void roe();
-	void hlle();
-	void hllc();
+	void roe(char);
+	void hlle(char);
+	void hllc(char);
 	
 	// for test
 	void OutputCellid();
