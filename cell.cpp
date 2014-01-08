@@ -36,7 +36,7 @@ void Cell::set_cell_interfaces()
 	}
 }
 
-void Cell::set_U(double *U)
+void Cell::initialize(double *U)
 {
 	for (int i = 0; i < 4; i++)
 	{
@@ -46,7 +46,7 @@ void Cell::set_U(double *U)
 
 void Cell::predict(double dt, char direction)
 {
-	double Ul[4], Ur[4], Fl[4], Fr[4], pl, pr, hl, hr;
+	double Ul[4], Ur[4], Fl[4], Fr[4], pl, pr, hl, hr, temp;
 	int interfaceid1, interfaceid2, i;
 
 	if (direction == 'x')
@@ -64,22 +64,31 @@ void Cell::predict(double dt, char direction)
 		Ul[i] = cell_interfaces_[interfaceid1]->get_U2()[i];
 		Ur[i] = cell_interfaces_[interfaceid2]->get_U1()[i];	
 	}
+	if (direction == 'y')
+	{
+		temp = Ul[1];
+		Ul[1] = Ul[2];
+		Ul[2] = temp;
+		temp = Ur[1];
+		Ur[1] = Ur[2];
+		Ur[2] = temp;		
+	}
 	
 	pl = (GAMMA - 1.0) * (Ul[3] - 0.5 * (Ul[1] * Ul[1] + Ul[2] * Ul[2]) / Ul[0]);
 	pr = (GAMMA - 1.0) * (Ur[3] - 0.5 * (Ur[1] * Ur[1] + Ur[2] * Ur[2]) / Ur[0]);
 	hl = (Ul[3] + pl) / Ul[0];
 	hr = (Ur[3] + pr) / Ur[0];
+	Fl[0] = Ul[1];
+	Fl[1] = Ul[1] * Ul[1] / Ul[0] + pl;
+	Fl[2] = Ul[1] * Ul[2] / Ul[0];
+	Fl[3] = Ul[1] * hl;
+	Fr[0] = Ur[1];
+	Fr[1] = Ur[1] * Ur[1] / Ur[0] + pr;
+	Fr[2] = Ur[1] * Ur[2] / Ur[0];
+	Fr[3] = Ur[1] * hr;
 	
 	if (direction == 'x')
 	{
-		Fl[0] = Ul[1];
-		Fl[1] = Ul[1] * Ul[1] / Ul[0] + pl;
-		Fl[2] = Ul[1] * Ul[2] / Ul[0];
-		Fl[3] = Ul[1] * hl;
-		Fr[0] = Ur[1];
-		Fr[1] = Ur[1] * Ur[1] / Ur[0] + pr;
-		Fr[2] = Ur[1] * Ur[2] / Ur[0];
-		Fr[3] = Ur[1] * hr;
 		for (i = 0; i < 4; i++)
 		{
 			Ul[i] = Ul[i] + dt / dx_ * (Fl[i] - Fr[i]);
@@ -88,21 +97,19 @@ void Cell::predict(double dt, char direction)
 	}
 	else if (direction == 'y')
 	{
-		Fl[0] = Ul[2];
-		Fl[1] = Ul[1] * Ul[2] / Ul[0];
-		Fl[2] = Ul[2] * Ul[2] / Ul[0] + pl;
-		Fl[3] = Ul[2] * hl;
-		Fr[0] = Ur[2];
-		Fr[1] = Ur[1] * Ur[2] / Ur[0];
-		Fr[2] = Ur[2] * Ur[2] / Ur[0] + pr;
-		Fr[3] = Ur[2] * hr;
 		for (i = 0; i < 4; i++)
 		{
 			Ul[i] = Ul[i] + dt / dy_ * (Fl[i] - Fr[i]);
 			Ur[i] = Ur[i] + dt / dy_ * (Fl[i] - Fr[i]);
 		}
+		temp = Ul[1];
+		Ul[1] = Ul[2];
+		Ul[2] = temp;
+		temp = Ur[1];
+		Ur[1] = Ur[2];
+		Ur[2] = temp;
 	}
-
+	
 	cell_interfaces_[interfaceid1]->set_U2(Ul);
 	cell_interfaces_[interfaceid2]->set_U1(Ur);
 	

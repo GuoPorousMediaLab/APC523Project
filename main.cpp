@@ -23,8 +23,8 @@ int main(int argc, char const *argv[])
 	int slope_limiter = atoi(argv[2]);
 
 	int Nx = 100;
-    int Ny = 100;
-    double t, dt, tmax = 0.2, CPL = 0.9;
+    int Ny = 1;
+    double t, dt, tmax = 10.0, CPL = 0.9;
     
     Model mymodel(Nx, Ny);
     

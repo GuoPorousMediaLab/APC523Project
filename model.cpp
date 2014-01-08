@@ -57,7 +57,7 @@ void Model::create_(int Nx, int Ny)
             }
             else
             {
-            	cellid[1] = -1;	// interface is right boundary
+            	cellid[1] = -2;	// interface is right boundary
             }
 			interfaces_.push_back(Interface(cellid, i * (Nx_ + 1) + j, this));
 		}
@@ -74,7 +74,7 @@ void Model::create_(int Nx, int Ny)
             }
             else
             {
-            	cellid[0] = -1;	// interface is bottom boundary
+            	cellid[0] = -2;	// interface is bottom boundary
             }
             if (i < Ny_)
 			{
@@ -82,7 +82,7 @@ void Model::create_(int Nx, int Ny)
             }
             else
             {
-            	cellid[1] = -1;	// interface is top boundary
+            	cellid[1] = -2;	// interface is top boundary
             }
             interfaces_.push_back(Interface(cellid, (Nx_ + 1) * Ny_ + i * Nx_ + j, this));
         }
@@ -112,85 +112,95 @@ void Model::create_()
 void Model::Initialize()
 {
 // set up a Riemann problem in x direction for testing
-//	double rho1 = 1.4, u1 = 3.0, p1 = 1.0, rho2 = 1.4, u2 = 0.0, p2 = 1.0, x0 = -0.4;
+	double rho1 = 1.4, u1 = 2.0, v1 = 0.0, p1 = 1.0, rho2 = 1.4, u2 = 0.0, v2 = 0.0, p2 = 1.0, x0 = 0.0;
+	double Ul[4], Ur[4];
+	int i;
+	
+	Ul[0] = rho1;
+	Ul[1] = rho1 * u1;
+	Ul[2] = rho1 * v1;
+	Ul[3] = p1 / (GAMMA - 1.0) + 0.5 * rho1 * (u1 * u1 + v1 * v1);
+	Ur[0] = rho2;
+	Ur[1] = rho2 * u2;
+	Ur[2] = rho2 * v2;
+	Ur[3] = p2 / (GAMMA - 1.0) + 0.5 * rho2 * (u2 * u2 + v2 * v2);
+	
+	vector<Cell>::iterator cells_iter;
+    for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
+    {
+    	if (cells_iter->get_x() < x0)
+    	{
+			cells_iter->initialize(Ul);
+    	}
+    	else
+    	{
+			cells_iter->initialize(Ur);
+    	}
+    }
+
+// set up a Riemann problem in y direction for testing
+//	double rho1 = 1.0, u1 = 0.1, v1 = 0.75, p1 = 1.0, rho2 = 0.125, u2 = 0.5, v2 = 0.0, p2 = 0.1, y0 = -0.2;
 //	double Ul[4], Ur[4];
 //	int i;
 //	
 //	Ul[0] = rho1;
 //	Ul[1] = rho1 * u1;
-//	Ul[2] = 0.0;
-//	Ul[3] = p1 / (GAMMA - 1.0) + 0.5 * rho1 * u1 * u1;
+//	Ul[2] = rho1 * v1;
+//	Ul[3] = p1 / (GAMMA - 1.0) + 0.5 * rho1 * (u1 * u1 + v1 * v1);
 //	Ur[0] = rho2;
 //	Ur[1] = rho2 * u2;
-//	Ur[2] = 0.0;
-//	Ur[3] = p2 / (GAMMA - 1.0) + 0.5 * rho2 * u2 * u2;
-//	
-//	vector<Cell>::iterator cells_iter;
-//    for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
-//    {
-//    	if (cells_iter->get_x() < x0)
-//    	{
-//			cells_iter->set_U(Ul);
-//    	}
-//    	else
-//    	{
-//			cells_iter->set_U(Ur);
-//    	}
-//    }
-
-// set up a Riemann problem in y direction for testing
-//	double rho1 = 1.0, v1 = 0.75, p1 = 1.0, rho2 = 0.125, v2 = 0.0, p2 = 0.1, y0 = -0.2;
-//	double Ul[4], Ur[4];
-//	int i;
-//	
-//	Ul[0] = rho1;
-//	Ul[1] = 0.0;
-//	Ul[2] = rho1 * v1;
-//	Ul[3] = p1 / (GAMMA - 1.0) + 0.5 * rho1 * v1 * v1;
-//	Ur[0] = rho2;
-//	Ur[1] = 0.0;
 //	Ur[2] = rho2 * v2;
-//	Ur[3] = p2 / (GAMMA - 1.0) + 0.5 * rho2 * v2 * v2;
+//	Ur[3] = p2 / (GAMMA - 1.0) + 0.5 * rho2 * (u2 * u2 + v2 * v2);
 //	
 //	vector<Cell>::iterator cells_iter;
 //    for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
 //    {
 //    	if (cells_iter->get_y() < y0)
 //    	{
-//			cells_iter->set_U(Ul);
+//			cells_iter->initialize(Ul);
 //    	}
 //    	else
 //    	{
-//			cells_iter->set_U(Ur);
+//			cells_iter->initialize(Ur);
 //    	}
 //    }
 
 // set up a "tilted" Riemann problem for 2d testing
-	double rho1 = 1.0, v1 = 0.75, p1 = 1.0, rho2 = 0.125, v2 = 0.0, p2 = 0.1;
-	double Ul[4], Ur[4];
-	int i;
-	
-	Ul[0] = rho1;
-	Ul[1] = 0.0;
-	Ul[2] = rho1 * v1;
-	Ul[3] = p1 / (GAMMA - 1.0) + 0.5 * rho1 * v1 * v1;
-	Ur[0] = rho2;
-	Ur[1] = 0.0;
-	Ur[2] = rho2 * v2;
-	Ur[3] = p2 / (GAMMA - 1.0) + 0.5 * rho2 * v2 * v2;
-	
-	vector<Cell>::iterator cells_iter;
-    for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
-    {
-    	if (cells_iter->get_y() - cells_iter->get_x() > 0.0)
-    	{
-			cells_iter->set_U(Ul);
-    	}
-    	else
-    	{
-			cells_iter->set_U(Ur);
-    	}
-    }
+//	double rho1 = 1.0, u1 = 0.75 / sqrt(2), v1 = -0.75 / sqrt(2), p1 = 1.0, rho2 = 0.125, u2 = 0.0, v2 = 0.0, p2 = 0.1;
+//	double Ul[4], Ur[4];
+//	int i;
+//	
+//	Ul[0] = rho1;
+//	Ul[1] = rho1 * u1;
+//	Ul[2] = rho1 * v1;
+//	Ul[3] = p1 / (GAMMA - 1.0) + 0.5 * rho1 * (u1 * u1 + v1 * v1);
+//	Ur[0] = rho2;
+//	Ur[1] = rho2 * u2;
+//	Ur[2] = rho2 * v2;
+//	Ur[3] = p2 / (GAMMA - 1.0) + 0.5 * rho2 * (u2 * u2 + v2 * v2);
+//	
+//	vector<Cell>::iterator cells_iter;
+//    for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
+//    {
+//    	if (cells_iter->get_y() - cells_iter->get_x() - 0.2 * sqrt(2) > 0.0)
+//    	{
+//			cells_iter->initialize(Ul);
+//    	}
+//    	else
+//    	{
+//			cells_iter->initialize(Ur);
+//    	}
+//    }
+
+// Set up the flux at fixed-flux boundaries
+	for (int i = 0; i < (Nx_ + 1) * Ny_; i++)
+	{
+		interfaces_[i].initialize('x');
+	}
+	for (int i = (Nx_ + 1) * Ny_; i < 2 * Nx_ * Ny_ + Nx_ + Ny_; i++)
+	{
+		interfaces_[i].initialize('y');
+	}
 }
 
 double Model::Timestep(double CPL)

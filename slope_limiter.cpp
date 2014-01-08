@@ -28,31 +28,7 @@ void Cell::reconstruct(int slope_limiter, char direction)
 	cellid2 = cell_interfaces_[interfaceid2]->get_cellid(1);
 
 	// set up U1[4]
-	if (cellid1 == -1 || cellid1 == -2)
-	// if left interface is a transmissive boundary, create a ghost cell identical to current cell
-	{
-		for (i = 0; i < 4; i++)
-		{
-			U1[i] = U_[i];
-		}
-	}
-	else if (cellid1 == -3)
-	// if left interface is a reflective boundary, create a ghost cell with (rho, -rho*u, rho*v, E) or (rho, rho*u, -rho*v, E)
-	{
-		U1[0] = U_[0];
-		U1[3] = U_[3];
-		if (direction == 'x')
-		{
-			U1[1] = -U_[1];
-			U1[2] = U_[2];
-		}
-		else if (direction == 'y');
-		{
-			U1[1] = U_[1];
-			U1[2] = -U_[2];
-		}
-	}
-	else
+	if (cellid1 > 0)
 	// if left interface is not a boundary, copy left cell to U1
 	{
 		for (i = 0; i < 4; i++)
@@ -60,38 +36,71 @@ void Cell::reconstruct(int slope_limiter, char direction)
 			U1[i] = cell_interfaces_[interfaceid1]->get_cell(0)->get_U()[i];
 		}
 	}
+	else if (cellid1 == -1)
+	// if left interface is a fixed-flux boundary, create a ghost cell corresponding to that flux
+	{
+		for (i = 0; i < 4; i++)
+		{
+			U1[i] = cell_interfaces_[interfaceid1]->get_U1()[i];
+		}
+	}
+	else
+	// if left interface is a transmissive boundary, create a ghost cell identical to current cell
+	{
+		for (i = 0; i < 4; i++)
+		{
+			U1[i] = U_[i];
+		}
+		if (cellid1 == -3)
+	// if left interface is a reflective boundary, create a ghost cell with (rho, -rho*u, rho*v, E) or (rho, rho*u, -rho*v, E)
+		{
+			if (direction == 'x')
+			{
+				U1[1] = -U_[1];
+			}
+			else if (direction == 'y');
+			{
+				U1[2] = -U_[2];
+			}
+		}
+	}
+
 	
 	// set up U2[4]
-	if (cellid2 == -1 || cellid2 == -2)
+	if (cellid2 > 0)
+	// if right interface is not a boundary, copy right cell to U2
+	{
+		for (i = 0; i < 4; i++)
+		{
+			U2[i] = cell_interfaces_[interfaceid2]->get_cell(1)->get_U()[i];
+		}
+	}
+	else if (cellid2 == -1)
+	// if left interface is a fixed-flux boundary, create a ghost cell corresponding to that flux
+	{
+		for (i = 0; i < 4; i++)
+		{
+			U2[i] = cell_interfaces_[interfaceid2]->get_U2()[i];
+		}
+	}
+	else
 	// if right interface is a transmissive boundary, create a ghost cell identical to current cell
 	{
 		for (i = 0; i < 4; i++)
 		{
 			U2[i] = U_[i];
 		}
-	}
-	else if (cellid2 == -3)
+		if (cellid2 == -3)
 	// if right interface is a reflective boundary, create a ghost cell with (rho, -rho*u, rho*v, E) or (rho, rho*u, -rho*v, E)
-	{
-		U2[0] = U_[0];
-		U2[3] = U_[3];
-		if (direction == 'x')
 		{
-			U2[1] = -U_[1];
-			U2[2] = U_[2];
-		}
-		else if (direction == 'y')
-		{
-			U2[1] = U_[1];
-			U2[2] = -U_[2];
-		}
-	}
-	else
-	// if right interface is not a boundary, copy right cell to U2
-	{
-		for (i = 0; i < 4; i++)
-		{
-			U2[i] = cell_interfaces_[interfaceid2]->get_cell(1)->get_U()[i];
+			if (direction == 'x')
+			{
+				U2[1] = -U_[1];
+			}
+			else if (direction == 'y')
+			{
+				U2[2] = -U_[2];
+			}
 		}
 	}
 	
@@ -113,7 +122,7 @@ void Cell::reconstruct(int slope_limiter, char direction)
 	cell_interfaces_[interfaceid2]->set_U1(Ur);
 	
 	// set up U1 for left boundary
-	if (cellid1 == -1 || cellid1 == -2)
+	if (cellid1 == -2)
 	{
 		cell_interfaces_[interfaceid1]->set_U1(Ul);
 	}
@@ -130,7 +139,7 @@ void Cell::reconstruct(int slope_limiter, char direction)
 		cell_interfaces_[interfaceid1]->set_U1(Ul);
 	}
 	// set up U2 for right boundary
-	if (cellid2 == -1 || cellid2 == -2)
+	if (cellid2 == -2)
 	{
 		cell_interfaces_[interfaceid2]->set_U2(Ur);
 	}

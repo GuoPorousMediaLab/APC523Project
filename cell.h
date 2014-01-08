@@ -24,7 +24,7 @@ public:
 	double *get_U(){return U_;};
 	double get_dt();
 	
-	void set_U(double*);
+	void initialize(double*);
 	
 	void reconstruct(int, char);
 	void predict(double, char);

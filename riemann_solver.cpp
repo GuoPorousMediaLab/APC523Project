@@ -11,6 +11,9 @@ void Interface::roe(char direction)
 	double h1, h2, h, p1, p2, u, v, a, theta, delta[4], dv[4], temp;
 	int i;
 	
+	if (cellid_[0] == -1 || cellid_[1] == -1)	// if a fixed-flux bondary, use intialized flux value
+		return;
+
 	if (direction == 'y')
 	{
 			temp = U1_[1];
@@ -100,6 +103,9 @@ void Interface::hlle(char direction)
 	double h1, h2, h, p1, p2, u1, u2, u, v1, v2, v, a1, a2, a, theta, s1, s2, F1[4], F2[4], temp;
 	int i;
 
+	if (cellid_[0] == -1 || cellid_[1] == -1)	// if a fixed-flux bondary, use intialized flux value
+		return;
+		
 	if (direction == 'y')
 	{
 			temp = U1_[1];
@@ -180,6 +186,9 @@ void Interface::hllc(char direction)
 	double h1, h2, p1, p2, pstar, u1, u2, a1, a2, s1, s2, sstar, Ustar[4], F1[4], F2[4], temp;
 	int i;
 	
+	if (cellid_[0] == -1 || cellid_[1] == -1)	// if a fixed-flux bondary, use intialized flux value
+		return;
+		
 	if (direction == 'y')
 	{
 			temp = U1_[1];
