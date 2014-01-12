@@ -4,7 +4,6 @@ from time import clock
 
 print "Read time"
 print clock()
-# write BoSlice.txt files to be used in VESA
 
 gridName = 'grid'
 

@@ -13,8 +13,7 @@ def writeGrid(gridName, init_condition, Nx1, Ny1, Nx2, Ny2, dx1, dy1, dx2, dy2):
   # start point of the sawtooth in the cylinder area
   x0 = - Nx2 * dx2 + 0.5 * dx2
   y0 = - 0.5 * Ny2 * dy2 + 0.5 * dy2
-  #print x0
-  #print y0
+
   # array to store saw_position
   saw_position = []
   i = 0
@@ -25,14 +24,12 @@ def writeGrid(gridName, init_condition, Nx1, Ny1, Nx2, Ny2, dx1, dy1, dx2, dy2):
     while (x0 + i * dx2) ** 2 + (y0 + j * dy2) ** 2 > (0.5 * Ny2 * dy2) ** 2:
       i = i + 1
     saw_position.append(i + Nx1)
-    #print i + Nx1
   saw_position.append(Nx-1)
 
   # compute number of vertical interfaces
   v_num = (Nx + 1) * Ny1 
   for i in range(0,Ny2):
     v_num = v_num + saw_position[i] + 1
-  #print v_num
 
   # compute number of horizontal interfaces in the saw area, not include the two Nx
   h_num = 0
@@ -41,7 +38,6 @@ def writeGrid(gridName, init_condition, Nx1, Ny1, Nx2, Ny2, dx1, dy1, dx2, dy2):
       h_num = h_num + saw_position[i]
     else:
       h_num = h_num + saw_position[i+1]
-  # print h_num
 
   # compute number of cells in the saw area
   c_num = 0
@@ -51,15 +47,7 @@ def writeGrid(gridName, init_condition, Nx1, Ny1, Nx2, Ny2, dx1, dy1, dx2, dy2):
   # compute number of vertical interfaces in the saw area
   vs_num = c_num + Ny2
 
-  # print startx
-  # print starty
-
   f = open("".join([gridName,'.txt']),"w")
-
-  #write base parameters
-
-  # for num in fluid_params:
-  #   f.write(''.join([str(num),'\n']))
 
   # number of cells
   f.write(''.join([str(check_plane), '\n']))
