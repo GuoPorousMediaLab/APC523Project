@@ -22,15 +22,13 @@ int main(int argc, char const *argv[])
 	int riemann_solver = atoi(argv[1]);
 	int slope_limiter = atoi(argv[2]);
 
-	int Nx = 100;
-    int Ny = 1;
     double t, dt, tmax = 10.0, CPL = 0.9;
     
-    Model mymodel(Nx, Ny);
+    Model mymodel("grid.txt");
     
     mymodel.Initialize();
-    
-    int step = 1;
+
+	int step = 1;
     for (t = 0; t < tmax; t = t + dt)
     {
     	cout << "step " << step << endl;

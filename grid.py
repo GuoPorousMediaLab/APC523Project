@@ -19,14 +19,23 @@ init_condition.append(0)
 init_condition.append(100000)
 
 
-dx1 = 1
-dx2 = 0.5
-dy1 = 1
-dy2 = 0.5
-Nx1 = 1
-Nx2 = 2
-Ny1 = 2
-Ny2 = 4
+#dx1 = 1
+#dx2 = 0.5
+#dy1 = 1
+#dy2 = 0.5
+#Nx1 = 1
+#Nx2 = 2
+#Ny1 = 2
+#Ny2 = 4
+
+dx1 = 0.05
+dx2 = 0.025
+dy1 = 0.05
+dy2 = 0.025
+Nx1 = 20
+Nx2 = 40
+Ny1 = 20
+Ny2 = 40
 
 wf.writeGrid(gridName, init_condition, Nx1, Ny1, Nx2, Ny2, dx1, dy1, dx2, dy2)
 

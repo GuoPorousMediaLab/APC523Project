@@ -1,141 +1,77 @@
 #include <vector>
 #include <cmath>
 #include <iostream>
+#include <sstream>
 #include <fstream>
 #include "model.h"
 
 using namespace std;
 
-void Model::create_(int Nx, int Ny)
+void Model::create_(const char *filename)
 {
-	Nx_ = Nx;
-	Ny_ = Ny;
+	int cellid[2], interfaceid[4];
+    double x, y, dx, dy;
+    int i;
+    string line;
+    istringstream data;
+    ifstream fin;
+    
+    fin.open(filename);
+    
+    getline(fin, line);
+    fin >> Nvertical_ >> Nx_ >> Ny_;
+    
+	getline(fin, line);
+    getline(fin, line);
 
-	// initialize cells
-	int interfaceid[4]; // interfaceid for each cell
-	double centerx = 0.0;
-    double centery = 0.0;
-    double dx = 1.0 / Nx;
-    double dy = 1.0 / Ny;
-    double startx = centerx - (Nx_ - 1) / 2.0 * dx;
-    double starty = centery - (Ny_ - 1) / 2.0 * dy;
-    int i, j;
-    for (i = 0; i < Ny_; i++)
-    {    
-    	for (j = 0; j < Nx_; j++)
-        {
-        	interfaceid[0] = i * (Nx_ + 1) + j;	// left interface
-        	interfaceid[1] = i * (Nx_ + 1) + j + 1;	// right interface
-        	interfaceid[2] =  Ny_ * (Nx_ + 1) + i * Nx_ + j;	// bottom interface
-        	interfaceid[3] =  Ny_ * (Nx_ + 1) + (i + 1) * Nx_ + j;	// up interface
-            cells_.push_back(Cell(interfaceid, startx + j * dx, starty + i * dy, dx, dy, i * Nx_ + j, this));
-        }
+    getline(fin, line);
+    while (line[0] != '#')
+	{
+    	data.str(line);
+    	data >> interfaceid[0] >> interfaceid[1] >> interfaceid[2] >> interfaceid[3] >> x >> y >> dx >> dy >> cellid[0];
+		cells_.push_back(Cell(interfaceid, x, y, dx, dy, cellid[0], this));
+    	//cout << interfaceid[0] << interfaceid[1] << interfaceid[2] << interfaceid[3] << x << y << dx << dy << cellid[0] << endl;
+    	getline(fin, line);
     }
 
-	// initialize intefaces
-	int cellid[2]; // cellid for each interface
-	
-	// vertical interfaces
-	for (int i = 0; i < Ny_; i++)
+    getline(fin, line);
+    while (!fin.eof())
 	{
-		for (int j = 0; j < Nx_ + 1; j++)
-		{
-			if (j > 0)
-			{
-                cellid[0] = i * Nx_ + j - 1;	// left cell
-            }
-            else
-            {
-            	cellid[0] = -1;	// interface is left boundary
-                // -1 -- fixed boundary
-                // -2 -- transimissive boundary
-                // -3 -- reflective boundary
-            }
-            if (j < Nx_)
-			{
-                cellid[1] = i * Nx_ + j;	// right cell
-            }
-            else
-            {
-            	cellid[1] = -2;	// interface is right boundary
-            }
-			interfaces_.push_back(Interface(cellid, i * (Nx_ + 1) + j, this));
-		}
-	}
-
-	// horizontal interfaces
-    for (int i = 0; i < Ny_ + 1; i++)
-    {
-        for (int j = 0; j < Nx_; j++)
-        {
-            if (i > 0)
-			{
-                cellid[0] = (i - 1) * Nx_ + j;	// bottom cell
-            }
-            else
-            {
-            	cellid[0] = -2;	// interface is bottom boundary
-            }
-            if (i < Ny_)
-			{
-                cellid[1] = i * Nx_ + j;	// top cell
-            }
-            else
-            {
-            	cellid[1] = -2;	// interface is top boundary
-            }
-            interfaces_.push_back(Interface(cellid, (Nx_ + 1) * Ny_ + i * Nx_ + j, this));
-        }
+		data.str(line);
+    	data >> cellid[0] >> cellid[1] >> interfaceid[0];
+    	interfaces_.push_back(Interface(cellid, interfaceid[0], this));
+    	//cout << cellid[0] << cellid[1] << interfaceid[0] << endl;
+    	getline(fin, line);
     }
 
     // setup cells correspond to interface and interfaces correspond to cells
-    vector<Interface>::iterator interfaces_iter;
-    for (interfaces_iter = interfaces_.begin(); interfaces_iter != interfaces_.end(); interfaces_iter++)
+    for (i = 0; i < cells_.size(); i++)
     {
-        interfaces_iter->set_interface_cells();
+        cells_[i].set_cell_interfaces();
     }
 
-    vector<Cell>::iterator cells_iter;
-    for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
+    for (i = 0; i < interfaces_.size(); i++)
     {
-        cells_iter->set_cell_interfaces();
+        interfaces_[i].set_interface_cells();
     }
 
-}
-
-void Model::create_()
-{
-	Nx_ = 0;
-	Ny_ = 0;
 }
 
 void Model::Initialize()
 {
 // set up a Riemann problem in x direction for testing
-	double rho1 = 1.4, u1 = 2.0, v1 = 0.0, p1 = 1.0, rho2 = 1.4, u2 = 0.0, v2 = 0.0, p2 = 1.0, x0 = 0.0;
-	double Ul[4], Ur[4];
+	double rho = 1.4, u = 3.0, v = 0.0, p = 1.0;
+	double U[4];
 	int i;
 	
-	Ul[0] = rho1;
-	Ul[1] = rho1 * u1;
-	Ul[2] = rho1 * v1;
-	Ul[3] = p1 / (GAMMA - 1.0) + 0.5 * rho1 * (u1 * u1 + v1 * v1);
-	Ur[0] = rho2;
-	Ur[1] = rho2 * u2;
-	Ur[2] = rho2 * v2;
-	Ur[3] = p2 / (GAMMA - 1.0) + 0.5 * rho2 * (u2 * u2 + v2 * v2);
+	U[0] = rho;
+	U[1] = rho * u;
+	U[2] = rho * v;
+	U[3] = p / (GAMMA - 1.0) + 0.5 * rho * (u * u + v * v);
 	
-	vector<Cell>::iterator cells_iter;
-    for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
+    for (i = 0; i< cells_.size(); i++)
     {
-    	if (cells_iter->get_x() < x0)
-    	{
-			cells_iter->initialize(Ul);
-    	}
-    	else
-    	{
-			cells_iter->initialize(Ur);
-    	}
+		cells_[i].initialize(U);
     }
 
 // set up a Riemann problem in y direction for testing
@@ -152,52 +88,24 @@ void Model::Initialize()
 //	Ur[2] = rho2 * v2;
 //	Ur[3] = p2 / (GAMMA - 1.0) + 0.5 * rho2 * (u2 * u2 + v2 * v2);
 //	
-//	vector<Cell>::iterator cells_iter;
-//    for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
+//    for (i = 0; i< cells_.size(); i++)
 //    {
-//    	if (cells_iter->get_y() < y0)
+//    	if (cells_[i].get_y() < y0)
 //    	{
-//			cells_iter->initialize(Ul);
+//			cells_[i].initialize(Ul);
 //    	}
 //    	else
 //    	{
-//			cells_iter->initialize(Ur);
-//    	}
-//    }
-
-// set up a "tilted" Riemann problem for 2d testing
-//	double rho1 = 1.0, u1 = 0.75 / sqrt(2), v1 = -0.75 / sqrt(2), p1 = 1.0, rho2 = 0.125, u2 = 0.0, v2 = 0.0, p2 = 0.1;
-//	double Ul[4], Ur[4];
-//	int i;
-//	
-//	Ul[0] = rho1;
-//	Ul[1] = rho1 * u1;
-//	Ul[2] = rho1 * v1;
-//	Ul[3] = p1 / (GAMMA - 1.0) + 0.5 * rho1 * (u1 * u1 + v1 * v1);
-//	Ur[0] = rho2;
-//	Ur[1] = rho2 * u2;
-//	Ur[2] = rho2 * v2;
-//	Ur[3] = p2 / (GAMMA - 1.0) + 0.5 * rho2 * (u2 * u2 + v2 * v2);
-//	
-//	vector<Cell>::iterator cells_iter;
-//    for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
-//    {
-//    	if (cells_iter->get_y() - cells_iter->get_x() - 0.2 * sqrt(2) > 0.0)
-//    	{
-//			cells_iter->initialize(Ul);
-//    	}
-//    	else
-//    	{
-//			cells_iter->initialize(Ur);
+//			cells_[i].initialize(Ur);
 //    	}
 //    }
 
 // Set up the flux at fixed-flux boundaries
-	for (int i = 0; i < (Nx_ + 1) * Ny_; i++)
+	for (i = 0; i < Nvertical_; i++)
 	{
 		interfaces_[i].initialize('x');
 	}
-	for (int i = (Nx_ + 1) * Ny_; i < 2 * Nx_ * Ny_ + Nx_ + Ny_; i++)
+	for (i = Nvertical_; i < interfaces_.size(); i++)
 	{
 		interfaces_[i].initialize('y');
 	}
@@ -207,11 +115,11 @@ double Model::Timestep(double CPL)
 // calculate the step size for next update
 {
 	double dt = 999.0;
-	vector<Cell>::iterator cells_iter;
+	int i;
 	
-    for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
+    for (i = 0; i < cells_.size(); i++)
     {
-		dt = fmin(dt, CPL * cells_iter->get_dt());
+		dt = fmin(dt, CPL * cells_[i].get_dt());
 	}
 	
 	return dt;
@@ -219,47 +127,49 @@ double Model::Timestep(double CPL)
 
 void Model::Reconstructx(int slope_limiter)
 {
-	vector<Cell>::iterator cells_iter;
+	int i;
 	
-    for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
+    for (i = 0; i < cells_.size(); i++)
     {
-		cells_iter->reconstruct(slope_limiter, 'x');
+		cells_[i].reconstruct(slope_limiter, 'x');
 	}	
 }
 
 void Model::Reconstructy(int slope_limiter)
 {
-	vector<Cell>::iterator cells_iter;
+	int i;
 	
-    for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
+    for (i = 0; i < cells_.size(); i++)
     {
-		cells_iter->reconstruct(slope_limiter, 'y');
+		cells_[i].reconstruct(slope_limiter, 'y');
 	}	
 }
 
 void Model::Predictx(double dt)
 {
-	vector<Cell>::iterator cells_iter;
+	int i;
 	
-    for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
+    for (i = 0; i < cells_.size(); i++)
     {
-    	cells_iter->predict(dt, 'x');
+    	cells_[i].predict(dt, 'x');
     }
 }
 
 void Model::Predicty(double dt)
 {
-	vector<Cell>::iterator cells_iter;
+	int i;
 	
-    for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
+    for (i = 0; i < cells_.size(); i++)
     {
-    	cells_iter->predict(dt, 'y');
+    	cells_[i].predict(dt, 'y');
     }
 }
 
 void Model::Riemannx(int riemann_solver)
 {
-	for (int i = 0; i < (Nx_ + 1) * Ny_; i++)
+	int i;
+	
+	for (i = 0; i < Nvertical_; i++)
 	{
 		switch (riemann_solver)
 		{
@@ -280,7 +190,9 @@ void Model::Riemannx(int riemann_solver)
 
 void Model::Riemanny(int riemann_solver)
 {
-	for (int i = (Nx_ + 1) * Ny_; i < 2 * Nx_ * Ny_ + Nx_ + Ny_; i++)
+	int i;
+	
+	for (i = Nvertical_; i < interfaces_.size(); i++)
 	{
 		switch (riemann_solver)
 		{
@@ -302,68 +214,149 @@ void Model::Riemanny(int riemann_solver)
 void Model::Updatex(double dt)
 // update the value of each cell
 {
-	vector<Cell>::iterator cells_iter;
+	int i;
 	
-    for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
+    for (i = 0; i < cells_.size(); i++)
 	{
-		cells_iter->update(dt, 'x');
+		cells_[i].update(dt, 'x');
 	}	
 }
 
 void Model::Updatey(double dt)
 // update the value of each cell
 {
-	vector<Cell>::iterator cells_iter;
+	int i;
 	
-    for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
+    for (i = 0; i < cells_.size(); i++)
 	{
-		cells_iter->update(dt, 'y');
+		cells_[i].update(dt, 'y');
 	}	
 }
 
 void Model::Outputid()
 {
-    vector<Interface>::iterator interfaces_iter;
-    for (interfaces_iter = interfaces_.begin(); interfaces_iter != interfaces_.end(); interfaces_iter++)
+	int i;
+	
+    for (i = 0; i < interfaces_.size(); i++)
     {
-        cout << "interfaceid: " << interfaces_iter->get_id() << endl;
-        interfaces_iter->OutputCellid();
+        cout << "interfaceid: " << interfaces_[i].get_id() << endl;
+        interfaces_[i].OutputCellid();
     }
     
 	cout << endl;
 	
-    vector<Cell>::iterator cells_iter;
-    for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
+    for (i = 0; i < cells_.size(); i++)
     {
-        cout << "cellid: " << cells_iter->get_id() << endl;
-        cells_iter->OutputInterfaceid();
+        cout << "cellid: " << cells_[i].get_id() << endl;
+        cells_[i].OutputInterfaceid();
     }
 }
 
 void Model::Outputvalue(const char *filename)
 // save the results in a file
 {
-	double p, u, v, a, rho;
+	double x, y, p, u, v, a, rho;
 	double *U;
-	int i;
-	ofstream fs;
+	int i, j, N;
+	ofstream fout;
 	
-	fs.open(filename);
-	fs << "x\ty\tp\tu\tv\ta\trho" << endl;
+	fout.open(filename);
+	fout << "Nx\tNy" << endl;
+	fout << Nx_ << '\t' << Ny_ << endl;
 	
-    vector<Cell>::iterator cells_iter;
-    for (cells_iter = cells_.begin(); cells_iter != cells_.end(); cells_iter++)
+	fout << "x\ty\tp\tu\tv\ta\trho" << endl;
+	N = 0;
+	i = 0;
+    for (i = 0; i < cells_.size(); i++)
     {
-		U = cells_iter->get_U();
-		
-		rho = U[0];
-		p = (GAMMA - 1.0) * (U[3] - 0.5 * (U[1] * U[1] + U[2] * U[2])/ U[0]);
-		u = U[1] / U[0];
-		v = U[2] / U[0];
-		a = sqrt(GAMMA * p / U[0]);
-		
-		fs << cells_iter->get_x() << "\t" << cells_iter->get_y() << "\t" << p << "\t" << u << "\t" << v << "\t" << a << "\t" << rho << endl;
+		if (i < cells_.size() - 1 && cells_[i + 1].get_y() != cells_[i].get_y())
+		{
+			for (j = N; j < Nx_; j++)
+			{
+				x = cells_[i - 1].get_x() + (j - N + 1) * cells_[i - 1].get_dx();
+				y = cells_[i - 1].get_y();
+				rho = 0.0;
+				p = 0.0;
+				u = 0.0;
+				v = 0.0;
+				a = 0.0;
+				fout << x << '\t' << y << '\t' << p << '\t' << u << '\t' << v << '\t' << a << '\t' << rho << endl;
+			}
+			N = 0;
+		}
+		else
+		{
+			x = cells_[i].get_x();
+			y = cells_[i].get_y();
+			U = cells_[i].get_U();
+			rho = U[0];
+			p = (GAMMA - 1.0) * (U[3] - 0.5 * (U[1] * U[1] + U[2] * U[2])/ U[0]);
+			u = U[1] / U[0];
+			v = U[2] / U[0];
+			a = sqrt(GAMMA * p / U[0]);
+			fout << x << '\t' << y << '\t' << p << '\t' << u << '\t' << v << '\t' << a << '\t' << rho << endl;
+			N++;
+		}
 	}
 	
-	fs.close();
+	fout.close();
+	
+	double x1, x2, y1, y2;
+	fout.open("interfaces.txt");
+	for (i = 0; i < Nvertical_; i++)
+	{
+		if (interfaces_[i].get_cellid(0) < 0)
+		{
+			x1 = interfaces_[i].get_cell(1)->get_x() - interfaces_[i].get_cell(1)->get_dx() / 2.0;
+			x2 = x1;
+			y1 = interfaces_[i].get_cell(1)->get_y() - interfaces_[i].get_cell(1)->get_dy() / 2.0;
+			y2 = interfaces_[i].get_cell(1)->get_y() + interfaces_[i].get_cell(1)->get_dy() / 2.0;
+			fout << x1 << '\t' << x2 << '\t' << y1 << '\t' << y2 << '\t' << interfaces_[i].get_cellid(0) << endl;
+		}
+		else if (interfaces_[i].get_cellid(1) < 0)
+		{
+			x1 = interfaces_[i].get_cell(0)->get_x() + interfaces_[i].get_cell(0)->get_dx() / 2.0;
+			x2 = x1;
+			y1 = interfaces_[i].get_cell(0)->get_y() - interfaces_[i].get_cell(0)->get_dy() / 2.0;
+			y2 = interfaces_[i].get_cell(0)->get_y() + interfaces_[i].get_cell(0)->get_dy() / 2.0;
+			fout << x1 << '\t' << x2 << '\t' << y1 << '\t' << y2 << '\t' << interfaces_[i].get_cellid(1) << endl;
+		}
+		else
+		{
+			x1 = interfaces_[i].get_cell(0)->get_x() + interfaces_[i].get_cell(0)->get_dx() / 2.0;
+			x2 = interfaces_[i].get_cell(1)->get_x() - interfaces_[i].get_cell(1)->get_dx() / 2.0;
+			y1 = interfaces_[i].get_cell(0)->get_y() - interfaces_[i].get_cell(0)->get_dy() / 2.0;
+			y2 = interfaces_[i].get_cell(1)->get_y() + interfaces_[i].get_cell(1)->get_dy() / 2.0;
+			fout << x1 << '\t' << x2 << '\t' << y1 << '\t' << y2 << '\t' << interfaces_[i].get_cellid(0) << endl;
+		}
+	}
+	for (i = Nvertical_; i < interfaces_.size(); i++)
+	{
+		if (interfaces_[i].get_cellid(0) < 0)
+		{
+			x1 = interfaces_[i].get_cell(1)->get_x() - interfaces_[i].get_cell(1)->get_dx() / 2.0;
+			x2 = interfaces_[i].get_cell(1)->get_x() + interfaces_[i].get_cell(1)->get_dx() / 2.0;
+			y1 = interfaces_[i].get_cell(1)->get_y() - interfaces_[i].get_cell(1)->get_dy() / 2.0;
+			y2 = y1;
+			fout << x1 << '\t' << x2 << '\t' << y1 << '\t' << y2 << '\t' << interfaces_[i].get_cellid(0) << endl;
+		}
+		else if (interfaces_[i].get_cellid(1) < 0)
+		{
+			x1 = interfaces_[i].get_cell(0)->get_x() - interfaces_[i].get_cell(0)->get_dx() / 2.0;
+			x2 = interfaces_[i].get_cell(0)->get_x() + interfaces_[i].get_cell(0)->get_dx() / 2.0;
+			y1 = interfaces_[i].get_cell(0)->get_y() + interfaces_[i].get_cell(0)->get_dy() / 2.0;
+			y2 = y1;
+			fout << x1 << '\t' << x2 << '\t' << y1 << '\t' << y2 << '\t' << interfaces_[i].get_cellid(1) << endl;
+		}
+		else
+		{
+			x1 = interfaces_[i].get_cell(0)->get_x() - interfaces_[i].get_cell(0)->get_dx() / 2.0;
+			x2 = interfaces_[i].get_cell(1)->get_x() + interfaces_[i].get_cell(1)->get_dx() / 2.0;
+			y1 = interfaces_[i].get_cell(0)->get_y() + interfaces_[i].get_cell(0)->get_dy()/ 2.0;
+			y2 = interfaces_[i].get_cell(1)->get_y() - interfaces_[i].get_cell(1)->get_dy()/ 2.0;;
+			fout << x1 << '\t' << x2 << '\t' << y1 << '\t' << y2 << '\t' << interfaces_[i].get_cellid(0) << endl;
+		}
+	}
+	
+	
 }

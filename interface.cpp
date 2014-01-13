@@ -19,17 +19,16 @@ void Interface::create_()
 
 void Interface::set_interface_cells()
 {
-	int i, id;
+	int i;
 	for (i = 0; i < 2; i++)
 	{
-		id = cellid_[i];
-		if (id == -1)
+		if (cellid_[i] < 0)
 		{
 			interface_cells_[i] = NULL;
 		}
 		else
 		{
-			interface_cells_[i]= mymodel_->get_cell(id);
+			interface_cells_[i]= mymodel_->get_cell(cellid_[i]);
 		}
 	}
 }
@@ -100,7 +99,7 @@ void Interface::OutputCellid()
     {
     	if (interface_cells_[i] == NULL)
     	{
-    		cout << -1 << endl;
+    		cout << cellid_[i] << endl;
     	}
     	else
     	{

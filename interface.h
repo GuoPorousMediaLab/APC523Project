@@ -16,7 +16,7 @@ public:
 	Interface(){create_();};
 
 	void set_interface_cells();
-	void initialize(char);
+	
 	
 	int get_id(){return id_;};
 	Cell *get_cell(int i){return interface_cells_[i];};
@@ -25,6 +25,7 @@ public:
 	double *get_U1(){return U1_;};
 	double *get_U2(){return U2_;};
 	
+	void initialize(char);
 	void set_U1(double *);
 	void set_U2(double *);
 	void roe(char);

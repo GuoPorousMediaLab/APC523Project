@@ -15,8 +15,7 @@ class Interface;
 class Model
 {
 public:
-	Model(int Nx, int Ny){create_(Nx, Ny);};
-	Model(){create_();};
+	Model(const char* filename){create_(filename);};
 
 	Cell *get_cell(int i){return &cells_[i];};
 	Interface *get_interface(int i){return &interfaces_[i];};
@@ -40,10 +39,10 @@ public:
 	
 
 private:
-	int Nx_, Ny_;
 	vector<Cell> cells_;
 	vector<Interface> interfaces_;
-	void create_(int, int);
+	int Nx_, Ny_, Nvertical_;
+	void create_(const char*);
 	void create_();
 };
 

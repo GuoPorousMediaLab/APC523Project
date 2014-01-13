@@ -59,11 +59,12 @@ void Cell::predict(double dt, char direction)
 		interfaceid1 = 2;
 		interfaceid2 = 3;
 	}
-	for (i = 0; i < 4; i++)
+	for (i = 0; i < 4; i++)	// get the reconstructed values Ul, Ur at cell boundaries
 	{
 		Ul[i] = cell_interfaces_[interfaceid1]->get_U2()[i];
 		Ur[i] = cell_interfaces_[interfaceid2]->get_U1()[i];	
 	}
+	
 	if (direction == 'y')
 	{
 		temp = Ul[1];
@@ -74,6 +75,7 @@ void Cell::predict(double dt, char direction)
 		Ur[2] = temp;		
 	}
 	
+	// calculate the flux Fl, Fr at the cell boundaries
 	pl = (GAMMA - 1.0) * (Ul[3] - 0.5 * (Ul[1] * Ul[1] + Ul[2] * Ul[2]) / Ul[0]);
 	pr = (GAMMA - 1.0) * (Ur[3] - 0.5 * (Ur[1] * Ur[1] + Ur[2] * Ur[2]) / Ur[0]);
 	hl = (Ul[3] + pl) / Ul[0];
@@ -87,6 +89,7 @@ void Cell::predict(double dt, char direction)
 	Fr[2] = Ur[1] * Ur[2] / Ur[0];
 	Fr[3] = Ur[1] * hr;
 	
+	// evolve Ul and Ur
 	if (direction == 'x')
 	{
 		for (i = 0; i < 4; i++)
@@ -110,9 +113,11 @@ void Cell::predict(double dt, char direction)
 		Ur[2] = temp;
 	}
 	
+	// set the evolved values to the interfaces
 	cell_interfaces_[interfaceid1]->set_U2(Ul);
 	cell_interfaces_[interfaceid2]->set_U1(Ur);
 	
+	// deal with reflective boundary
 	if (cell_interfaces_[interfaceid1]->get_cellid(0) == -3)
 	{
 		if (direction == 'x')

@@ -11,13 +11,13 @@ void Cell::reconstruct(int slope_limiter, char direction)
 	int interfaceid1, interfaceid2, cellid1, cellid2;
 
 	if (direction == 'x')
-	// if solving in x direction, set the two interfaces as left and right
+	// if solving in x direction, get the left and right interfaces
 	{
 		interfaceid1 = 0;
 		interfaceid2 = 1;
 	}
 	else if (direction == 'y')
-	// if solving in y direction, set the two interfaces as bottom and top
+	// if solving in y direction, fet the bottom and top interfaces
 	{
 		interfaceid1 = 2;
 		interfaceid2 = 3;

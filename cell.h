@@ -21,11 +21,12 @@ public:
 	int get_id(){return id_;};
 	double get_x(){return x_;};
 	double get_y(){return y_;};
+	double get_dx(){return dx_;};
+	double get_dy(){return dy_;};
 	double *get_U(){return U_;};
 	double get_dt();
 	
 	void initialize(double*);
-	
 	void reconstruct(int, char);
 	void predict(double, char);
 	void update(double, char);
