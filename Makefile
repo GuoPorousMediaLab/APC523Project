@@ -1,15 +1,18 @@
-OBJS = main.o model.o cell.o interface.o riemann_solver.o slope_limiter.o
-CXX = g++  
-CXXFLAGS = -O3 -g
-LINKFLAGS = -O3 -g
-Simulation: $(OBJS)
-	$(CXX) $(OBJS) $(LINKFLAGS) -o $@
-clean: 
-	rm -f Simulation *.o *.txt *.csv *~
-depend: 
-	$(CXX) -MM $(CXXFLAGS) *.cpp > .depend
+CC = g++
+BIN = project
+OBJ = main.o model.o cell.o interface.o slope_limiter.o riemann_solver.o io.o grid.o
+DEBUG = -g
+PROF = -pg
+CFLAG = -Wall -c $(DEBUG)
+LFLAG = -Wall $(DEBUG)
 
-.cpp.o: $<
-	$(CXX) $(CXXFLAGS) -c $<
+all: $(BIN)
 
--include .depend
+$(BIN): $(OBJ)
+	$(CC) $(LFLAG) -o $@ $^
+
+%.o: %.cpp
+	$(CC) $(CFLAG) -o $@ $<
+
+clean:
+	rm -f $(OBJ) $(BIN) *.txt *~
