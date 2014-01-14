@@ -27,12 +27,13 @@ void Cell::create_()
 }
 
 void Cell::set_cell_interfaces()
+// set the neighboring interfaces of a cell
 {
-	int i, id;
+	int i;
+	
 	for (i = 0; i < 4; i++)
 	{
-		id = interfaceid_[i];
-		cell_interfaces_[i] = mymodel_->get_interface(id);
+		cell_interfaces_[i] = mymodel_->get_interface(interfaceid_[i]);
 	}
 }
 
@@ -45,6 +46,7 @@ void Cell::initialize(double *U)
 }
 
 void Cell::predict(double dt, char direction)
+// prediction step for the Riemann solver
 {
 	double Ul[4], Ur[4], Fl[4], Fr[4], pl, pr, hl, hr, temp;
 	int interfaceid1, interfaceid2, i;
@@ -174,13 +176,5 @@ double Cell::get_dt()
 	p = (GAMMA - 1.0) * (U_[3] - 0.5 * (U_[1] * U_[1] + U_[2] * U_[2]) / U_[0]);
 	a = sqrt(GAMMA * p / U_[0]);
 	
-	return(fmin(dx_/ (u + a), dy_/ (u + a)));
+	return fmin(dx_/ (u + a), dy_/ (u + a));
 }
-
-void Cell::OutputInterfaceid()
-{
-    for (int i = 0; i < 4; i++)
-    {
-        cout << cell_interfaces_[i]->get_id() << endl;
-    }
-} 

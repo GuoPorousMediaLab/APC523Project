@@ -33,17 +33,15 @@ public:
 	
 	void minbee(double*, double*, double*, double*, double*);
 	void superbee(double*, double*, double*, double*, double*);
-	
-	//for test
-	void OutputInterfaceid();
 
 private:
-	int interfaceid_[4];
-	Interface *cell_interfaces_[4];	// cell_interfaces_[0]: left interface, [1]: right, [2]: bottom, [3]: up
-	double x_, y_, dx_, dy_;
-	double U_[4];	// U_[0]=rho, U_[1]=rho*u, U_[2]=rho*v, U_[3]=E
 	int id_;
+	int interfaceid_[4];
+	Interface *cell_interfaces_[4];
 	Model *mymodel_;
+	
+	double x_, y_, dx_, dy_;
+	double U_[4];
 
 	void create_(int*, double, double, double, double, int, Model*);
 	void create_();

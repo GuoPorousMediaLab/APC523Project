@@ -11,16 +11,19 @@ using namespace std;
 
 class Cell;
 class Interface;
+void grid(double, int, const char*);
 
 class Model
 {
 public:
 	Model(const char* filename){create_(filename);};
 
+
 	Cell *get_cell(int i){return &cells_[i];};
 	Interface *get_interface(int i){return &interfaces_[i];};
 	
-	void Initialize();
+	void Grid(double, int, const char*);
+	void Initialize(double);
 	
 	void Reconstructx(int);
 	void Predictx(double);
@@ -33,11 +36,8 @@ public:
 	void Updatey(double);
 	double Timestep(double);
 	
-	// for test
-	void Outputid();
-	void Outputvalue(const char*);
+	void Output(const char*);
 	
-
 private:
 	vector<Cell> cells_;
 	vector<Interface> interfaces_;

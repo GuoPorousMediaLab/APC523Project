@@ -1,3 +1,4 @@
+#include <iostream>
 #include <cmath>
 #include "interface.h"
 #include "cell.h"
@@ -78,6 +79,14 @@ void Interface::roe(char direction)
 		F_[3] = U2_[1] * h2;
 	}
 	
+//	for (i = 0; i < 4; i++)
+//	{
+//		if (isnan(F_[i]))
+//		{
+//			cout << id_ << endl;
+//		}
+//	}	
+
 	if (direction == 'y')
 	{
 		temp = F_[1];
@@ -160,6 +169,14 @@ void Interface::hlle(char direction)
 	else	// use numerical flux in the right region
 		for (i = 0; i < 4; i++)
 			F_[i] = F2[i];
+	
+//	for (i = 0; i < 4; i++)
+//	{
+//		if (isnan(F_[i]))
+//		{
+//			cout << id_ << endl;
+//		}
+//	}
 			
 	if (direction == 'y')
 	{
@@ -258,6 +275,15 @@ void Interface::hllc(char direction)
 	else	// use numerical flux in the right region
 		for (i = 0; i < 4; i++)
 			F_[i] = F2[i];
+
+	
+//	for (i = 0; i < 4; i++)
+//	{
+//		if (isnan(F_[i]))
+//		{
+//			cout << id_ << endl;
+//		}
+//	}
 			
 	if (direction == 'y')
 	{

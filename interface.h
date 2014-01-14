@@ -31,20 +31,15 @@ public:
 	void roe(char);
 	void hlle(char);
 	void hllc(char);
-	
-	// for test
-	void OutputCellid();
 
 private:
-	int cellid_[2];
-	Cell *interface_cells_[2];	// interface_cells_[0]: bottom/left cell, [1] : top/right cell
 	int id_;
+	int cellid_[2];
+	Cell *interface_cells_[2];
 	Model *mymodel_;
 
-	// U1_ correspondes to cell1 of the interface, U2_ corresponds to cell2
 	double U1_[4];
 	double U2_[4];
-	// direction of flux F is from cell1 to cell2
 	double F_[4];
 
 	void create_(int*, int, Model*);

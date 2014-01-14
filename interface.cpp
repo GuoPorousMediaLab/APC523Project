@@ -18,11 +18,12 @@ void Interface::create_()
 }
 
 void Interface::set_interface_cells()
+// set the neighboring cells of an interface
 {
 	int i;
 	for (i = 0; i < 2; i++)
 	{
-		if (cellid_[i] < 0)
+		if (cellid_[i] < 0)	// if the interface is a boundary
 		{
 			interface_cells_[i] = NULL;
 		}
@@ -34,6 +35,7 @@ void Interface::set_interface_cells()
 }
 
 void Interface::initialize(char direction)
+// initialize inflow boundaries
 {
 	double p, h, *U;
 	int i;
@@ -91,19 +93,4 @@ void Interface::set_U2(double *U)
 	{
 		U2_[i] = U[i];
 	}
-}
-
-void Interface::OutputCellid()
-{
-    for (int i = 0; i < 2; i++)
-    {
-    	if (interface_cells_[i] == NULL)
-    	{
-    		cout << cellid_[i] << endl;
-    	}
-    	else
-    	{
-			cout << interface_cells_[i]->get_id() << endl;
-		}
-    }
 }
